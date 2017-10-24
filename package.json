@@ -1,9 +1,12 @@
 {
   "name": "brightscript-formatter",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.4",
   "description": "A formatter for Roku's BrightScript language, written in JavaScript",
-  "main": "index.js",
+  "main": "dist/BrightScriptFormatter.js",
+  "types": "dist/BrightScriptFormatter.d.ts",
   "scripts": {
+    "compile": "rimraf out && tsc",
+    "prepublishOnly": "npm run compile",
     "test": "karma start"
   },
   "repository": {
@@ -17,6 +20,9 @@
   },
   "homepage": "https://github.com/TwitchBronBron/brightscript-formatter#readme",
   "dependencies": {
+    "brightscript-parser": "^1.0.0-alpha.8"
+  },
+  "devDependencies": {
     "@types/jasmine": "^2.6.0",
     "jasmine": "^2.8.0",
     "jasmine-core": "^2.8.0",
@@ -25,6 +31,7 @@
     "karma-jasmine": "^1.1.0",
     "karma-typescript": "^3.0.7",
     "tslint": "^5.7.0",
-    "typescript": "^2.5.2"
+    "typescript": "^2.5.2",
+    "rimraf": "^2.6.2"
   }
 }

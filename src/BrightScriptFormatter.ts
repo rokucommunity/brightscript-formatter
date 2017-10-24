@@ -1,4 +1,4 @@
-import { BrightScriptLexer, Token, TokenType } from 'brightscript-parser';
+import { BrightScriptLexer, CompositeKeywordTokenTypes, KeywordTokenTypes, Token, TokenType } from 'brightscript-parser';
 export class BrightScriptFormatter {
     constructor() {
 
@@ -11,7 +11,117 @@ export class BrightScriptFormatter {
     public format(inputText: string, formattingOptions?: FormattingOptions) {
         let options = this.normalizeOptions(formattingOptions);
         let lexer = new BrightScriptLexer();
+        let tokens = lexer.tokenize(inputText);
 
+        //force all composite keywords to have 0 or 1 spaces in between, but no more than 1
+        tokens = this.normalizeCompositeKeywords(tokens);
+
+        if (options.breakCompositeKeywords) {
+            tokens = this.breakCompositeKeywords(tokens);
+        }
+
+        if (options.indentStyle) {
+            tokens = this.formatIndentation(tokens, options);
+        }
+
+        if (options.keywordCasing) {
+            tokens = this.formatKeywordCasing(tokens, options);
+        }
+
+        //join all tokens back together into a single string
+        let outputText = '';
+        for (let token of tokens) {
+            outputText += token.value;
+        }
+        return outputText;
+    }
+
+    /**
+     * Remove all whitespace in the composite keyword tokens with a single space
+     * @param tokens
+     */
+    private normalizeCompositeKeywords(tokens: Token[]) {
+        let indexOffset = 0;
+        for (let token of tokens) {
+            token.startIndex += indexOffset;
+            //is this a composite token
+            if (CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
+                let value = token.value;
+                //remove all whitespace with a single space
+                token.value.replace(/s+/g, ' ');
+                let indexDifference = value.length - token.value.length;
+                indexOffset -= indexDifference;
+            }
+        }
+        return tokens;
+    }
+
+    private breakCompositeKeywords(tokens: Token[]) {
+        let indexOffset = 0;
+        for (let token of tokens) {
+            token.startIndex += indexOffset;
+            //is this a composite token
+            if (CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
+                if (token.value.indexOf(' ') === -1) {
+                    let tokenValue = token.value;
+                    let lowerValue = token.value.toLowerCase();
+
+                    //split the parts of the token, but retain their case
+                    if (lowerValue.indexOf('end') === 0) {
+                        token.value = token.value.substring(0, 3) + ' ' + token.value.substring(3);
+                        indexOffset++;
+                    } else if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
+                        token.value = token.value.substring(0, 4) + ' ' + token.value.substring(4);
+                        indexOffset++;
+                    }
+                }
+            }
+        }
+        return tokens;
+    }
+
+    private formatKeywordCasing(tokens: Token[], options: FormattingOptions) {
+        for (let token of tokens) {
+            //if this token is a keyword
+            if (KeywordTokenTypes.indexOf(token.tokenType) > -1) {
+                switch (options.keywordCasing) {
+                    case 'lower':
+                        token.value = token.value.toLowerCase();
+                        break;
+                    case 'upper':
+                        token.value = token.value.toUpperCase();
+                        break;
+                    case 'title':
+                        let lowerValue = token.value.toLowerCase();
+                        if (CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
+                            token.value = token.value.substring(0, 1).toUpperCase() + token.value.substring(1).toLowerCase();
+                        } else {
+                            let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
+                            let firstWordLength: number = 0;
+                            if (lowerValue.indexOf('end') === 0) {
+                                firstWordLength = 3;
+                            } else { //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1) 
+                                firstWordLength = 4;
+                            }
+                            token.value =
+                                //first character
+                                token.value.substring(0, 1).toUpperCase() +
+                                //rest of first word
+                                token.value.substring(1, firstWordLength).toLowerCase() +
+                                //add back the whitespace
+                                token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
+                                //first character of second word
+                                token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
+                                //rest of second word
+                                token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
+                        }
+                }
+            }
+        }
+        return tokens;
+    }
+
+    private formatIndentation(tokens: Token[], options: FormattingOptions) {
         let indentTokens = [
             TokenType.sub,
             TokenType.for,
@@ -35,7 +145,6 @@ export class BrightScriptFormatter {
         ];
         let tabCount = 0;
 
-        let tokens = lexer.tokenize(inputText);
         let nextLineStartTokenIndex = 0;
         //the list of output tokens
         let outputTokens: Token[] = [];
@@ -94,12 +203,7 @@ export class BrightScriptFormatter {
                 throw new Error('Something went terribly wrong');
             }
         }
-        //join all tokens back together into a single string
-        let outputText = '';
-        for (let token of outputTokens) {
-            outputText += token.value;
-        }
-        return outputText;
+        return outputTokens;
     }
 
     /**
@@ -128,7 +232,9 @@ export class BrightScriptFormatter {
     private normalizeOptions(options: FormattingOptions | undefined) {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
-            indentSpaceCount: 4
+            indentSpaceCount: 4,
+            keywordCasing: 'lower',
+            breakCompositeKeywords: false
         };
         if (options) {
             for (let attrname in options) {
@@ -146,10 +252,18 @@ export interface FormattingOptions {
     /**
      * The type of indentation to use when indenting the beginning of lines.
      */
-    indentStyle: 'tabs' | 'spaces';
+    indentStyle?: 'tabs' | 'spaces' | null;
     /**
      * The number of spaces to use when indentStyle is 'spaces'. Default is 4
      */
-    indentSpaceCount: number;
-
+    indentSpaceCount?: number;
+    /**
+     * Replaces all keywords with the upper or lower case settings specified. 
+     * If set to null, they are not modified at all.
+     */
+    keywordCasing?: 'lower' | 'upper' | 'title' | null;
+    /**
+     * When true, composite keywords (i.e. "elseif", "endwhile", etc...) are split into their alternatives ("else if", "end while")
+     */
+    breakCompositeKeywords?: boolean;
 }
