@@ -16,15 +16,15 @@ export class BrightScriptFormatter {
         //force all composite keywords to have 0 or 1 spaces in between, but no more than 1
         tokens = this.normalizeCompositeKeywords(tokens);
 
-        if (options.breakCompositeKeywords) {
-            tokens = this.breakCompositeKeywords(tokens);
+        if (options.compositeKeywords) {
+            tokens = this.formatCompositeKeywords(tokens, options);
         }
 
         if (options.indentStyle) {
             tokens = this.formatIndentation(tokens, options);
         }
 
-        if (options.keywordCasing) {
+        if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
         }
 
@@ -56,35 +56,41 @@ export class BrightScriptFormatter {
         return tokens;
     }
 
-    private breakCompositeKeywords(tokens: Token[]) {
+    private formatCompositeKeywords(tokens: Token[], options: FormattingOptions) {
         let indexOffset = 0;
         for (let token of tokens) {
             token.startIndex += indexOffset;
             //is this a composite token
             if (CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                if (token.value.indexOf(' ') === -1) {
-                    let tokenValue = token.value;
-                    let lowerValue = token.value.toLowerCase();
-
-                    //split the parts of the token, but retain their case
-                    if (lowerValue.indexOf('end') === 0) {
-                        token.value = token.value.substring(0, 3) + ' ' + token.value.substring(3);
-                        indexOffset++;
-                    } else if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
-                        token.value = token.value.substring(0, 4) + ' ' + token.value.substring(4);
-                        indexOffset++;
-                    }
+                let parts = this.getCompositeKeywordParts(token);
+                let tokenValue = token.value;
+                if (options.compositeKeywords === 'combine') {
+                    token.value = parts[0] + parts[1];
+                } else {// if(options.compositeKeywords === 'split'){
+                    token.value = parts[0] + ' ' + parts[1];
                 }
+                let offsetDifference = token.value.length - tokenValue.length;
+                indexOffset += offsetDifference;
             }
         }
         return tokens;
+    }
+
+    private getCompositeKeywordParts(token: Token) {
+        let lowerValue = token.value.toLowerCase();
+        //split the parts of the token, but retain their case
+        if (lowerValue.indexOf('end') === 0) {
+            return [token.value.substring(0, 3), token.value.substring(3).trim()];
+        } else { // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
+            return [token.value.substring(0, 4), token.value.substring(4).trim()];
+        }
     }
 
     private formatKeywordCasing(tokens: Token[], options: FormattingOptions) {
         for (let token of tokens) {
             //if this token is a keyword
             if (KeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                switch (options.keywordCasing) {
+                switch (options.keywordCase) {
                     case 'lower':
                         token.value = token.value.toLowerCase();
                         break;
@@ -233,8 +239,8 @@ export class BrightScriptFormatter {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
             indentSpaceCount: 4,
-            keywordCasing: 'lower',
-            breakCompositeKeywords: false
+            keywordCase: 'lower',
+            compositeKeywords: 'split'
         };
         if (options) {
             for (let attrname in options) {
@@ -261,9 +267,12 @@ export interface FormattingOptions {
      * Replaces all keywords with the upper or lower case settings specified. 
      * If set to null, they are not modified at all.
      */
-    keywordCasing?: 'lower' | 'upper' | 'title' | null;
+    keywordCase?: 'lower' | 'upper' | 'title' | null;
     /**
-     * When true, composite keywords (i.e. "elseif", "endwhile", etc...) are split into their alternatives ("else if", "end while")
+     * Forces all composite keywords (i.e. "elseif", "endwhile", etc...) to be consistent. 
+     * If 'split', they are split into their alternatives ("else if", "end while").
+     * If 'combine', they are combined ("elseif", "endwhile").
+     * If null, they are not modified.
      */
-    breakCompositeKeywords?: boolean;
+    compositeKeywords?: 'split' | 'combine' | null;
 }
