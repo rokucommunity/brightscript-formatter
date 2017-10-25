@@ -1,6 +1,6 @@
 {
   "name": "brightscript-formatter",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "A formatter for Roku's BrightScript language, written in JavaScript",
   "main": "dist/BrightScriptFormatter.js",
   "types": "dist/BrightScriptFormatter.d.ts",
