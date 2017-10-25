@@ -142,7 +142,7 @@ var BrightScriptFormatter = /** @class */ (function () {
             brightscript_parser_1.TokenType.endSub,
             brightscript_parser_1.TokenType.endWhile,
             brightscript_parser_1.TokenType.endFor,
-            brightscript_parser_1.TokenType.next
+            brightscript_parser_1.TokenType.next,
         ];
         var interumTokens = [
             brightscript_parser_1.TokenType.else,
@@ -158,11 +158,13 @@ var BrightScriptFormatter = /** @class */ (function () {
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
             var lineTokens = lineObj.tokens;
             var thisTabCount = tabCount;
+            var foundIndentorThisLine = false;
             for (var _i = 0, lineTokens_1 = lineTokens; _i < lineTokens_1.length; _i++) {
                 var token = lineTokens_1[_i];
                 //if this is an indentor token, 
                 if (indentTokens.indexOf(token.tokenType) > -1) {
                     tabCount++;
+                    foundIndentorThisLine = true;
                     //this is an outdentor token
                 }
                 else if (outdentTokens.indexOf(token.tokenType) > -1) {
@@ -173,6 +175,10 @@ var BrightScriptFormatter = /** @class */ (function () {
                 else if (interumTokens.indexOf(token.tokenType) > -1) {
                     //these need outdented, but don't change the tabCount 
                     thisTabCount--;
+                }
+                else if (token.tokenType === brightscript_parser_1.TokenType.return && foundIndentorThisLine) {
+                    //a return statement on the same line as an indentor means we don't want to indent
+                    tabCount--;
                 }
             }
             if (thisTabCount < 0 || tabCount < 0) {

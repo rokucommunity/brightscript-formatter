@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/TwitchBronBron/brightscript-formatter#readme",
   "dependencies": {
-    "brightscript-parser": "^1.0.0-alpha.8"
+    "brightscript-parser": "^1.0.0-alpha.9"
   },
   "devDependencies": {
     "@types/jasmine": "^2.6.0",

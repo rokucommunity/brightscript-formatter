@@ -47,7 +47,7 @@ describe('BrightScriptFormatter', () => {
                 );
         });
 
-        fit('handles return token properly', () => {
+        it('handles return token properly', () => {
             expect(formatter.format(
                 `sub main()\n if msg.isScreenClosed() then return\n end sub`)
             ).toEqual(
@@ -58,6 +58,14 @@ describe('BrightScriptFormatter', () => {
                 `sub main()\n if msg.isScreenClosed() then\n return\nend if\n end sub`)
             ).toEqual(
                 `sub main()\n    if msg.isScreenClosed() then\n        return\n    end if\nend sub`
+                );
+        });
+
+        it('handles line comments', () => {
+            expect(formatter.format(
+                `sub main()\n'comment1\n'comment2\nend sub`)
+            ).toEqual(
+                `sub main()\n    'comment1\n    'comment2\nend sub`
                 );
         });
     });
