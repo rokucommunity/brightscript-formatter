@@ -143,7 +143,7 @@ export class BrightScriptFormatter {
             TokenType.endSub,
             TokenType.endWhile,
             TokenType.endFor,
-            TokenType.next
+            TokenType.next,
         ];
         let interumTokens = [
             TokenType.else,
@@ -161,11 +161,12 @@ export class BrightScriptFormatter {
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
             let lineTokens = lineObj.tokens;
             let thisTabCount = tabCount;
-
+            let foundIndentorThisLine = false;
             for (let token of lineTokens) {
                 //if this is an indentor token, 
                 if (indentTokens.indexOf(token.tokenType) > -1) {
                     tabCount++;
+                    foundIndentorThisLine = true;
                     //this is an outdentor token
                 } else if (outdentTokens.indexOf(token.tokenType) > -1) {
                     tabCount--;
@@ -174,6 +175,9 @@ export class BrightScriptFormatter {
                 } else if (interumTokens.indexOf(token.tokenType) > -1) {
                     //these need outdented, but don't change the tabCount 
                     thisTabCount--;
+                } else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
+                    //a return statement on the same line as an indentor means we don't want to indent
+                    tabCount--;
                 }
             }
             if (thisTabCount < 0 || tabCount < 0) {

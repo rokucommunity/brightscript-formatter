@@ -46,6 +46,20 @@ describe('BrightScriptFormatter', () => {
                 `sub add()\n    if true then\n        a=1\n    else if true then\n        a=1\n    end if\nend sub`
                 );
         });
+
+        fit('handles return token properly', () => {
+            expect(formatter.format(
+                `sub main()\n if msg.isScreenClosed() then return\n end sub`)
+            ).toEqual(
+                `sub main()\n    if msg.isScreenClosed() then return\nend sub`
+                );
+
+            expect(formatter.format(
+                `sub main()\n if msg.isScreenClosed() then\n return\nend if\n end sub`)
+            ).toEqual(
+                `sub main()\n    if msg.isScreenClosed() then\n        return\n    end if\nend sub`
+                );
+        });
     });
 
     describe('keywordCase', () => {

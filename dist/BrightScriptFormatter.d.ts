@@ -11,7 +11,8 @@ export declare class BrightScriptFormatter {
      * @param tokens
      */
     private normalizeCompositeKeywords(tokens);
-    private breakCompositeKeywords(tokens);
+    private formatCompositeKeywords(tokens, options);
+    private getCompositeKeywordParts(token);
     private formatKeywordCasing(tokens, options);
     private formatIndentation(tokens, options);
     /**
@@ -38,9 +39,12 @@ export interface FormattingOptions {
      * Replaces all keywords with the upper or lower case settings specified.
      * If set to null, they are not modified at all.
      */
-    keywordCasing?: 'lower' | 'upper' | 'title' | null;
+    keywordCase?: 'lower' | 'upper' | 'title' | null;
     /**
-     * When true, composite keywords (i.e. "elseif", "endwhile", etc...) are split into their alternatives ("else if", "end while")
+     * Forces all composite keywords (i.e. "elseif", "endwhile", etc...) to be consistent.
+     * If 'split', they are split into their alternatives ("else if", "end while").
+     * If 'combine', they are combined ("elseif", "endwhile").
+     * If null, they are not modified.
      */
-    breakCompositeKeywords?: boolean;
+    compositeKeywords?: 'split' | 'combine' | null;
 }

@@ -15,13 +15,13 @@ var BrightScriptFormatter = /** @class */ (function () {
         var tokens = lexer.tokenize(inputText);
         //force all composite keywords to have 0 or 1 spaces in between, but no more than 1
         tokens = this.normalizeCompositeKeywords(tokens);
-        if (options.breakCompositeKeywords) {
-            tokens = this.breakCompositeKeywords(tokens);
+        if (options.compositeKeywords) {
+            tokens = this.formatCompositeKeywords(tokens, options);
         }
         if (options.indentStyle) {
             tokens = this.formatIndentation(tokens, options);
         }
-        if (options.keywordCasing) {
+        if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
         }
         //join all tokens back together into a single string
@@ -52,36 +52,43 @@ var BrightScriptFormatter = /** @class */ (function () {
         }
         return tokens;
     };
-    BrightScriptFormatter.prototype.breakCompositeKeywords = function (tokens) {
+    BrightScriptFormatter.prototype.formatCompositeKeywords = function (tokens, options) {
         var indexOffset = 0;
         for (var _i = 0, tokens_3 = tokens; _i < tokens_3.length; _i++) {
             var token = tokens_3[_i];
             token.startIndex += indexOffset;
             //is this a composite token
             if (brightscript_parser_1.CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                if (token.value.indexOf(' ') === -1) {
-                    var tokenValue = token.value;
-                    var lowerValue = token.value.toLowerCase();
-                    //split the parts of the token, but retain their case
-                    if (lowerValue.indexOf('end') === 0) {
-                        token.value = token.value.substring(0, 3) + ' ' + token.value.substring(3);
-                        indexOffset++;
-                    }
-                    else if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
-                        token.value = token.value.substring(0, 4) + ' ' + token.value.substring(4);
-                        indexOffset++;
-                    }
+                var parts = this.getCompositeKeywordParts(token);
+                var tokenValue = token.value;
+                if (options.compositeKeywords === 'combine') {
+                    token.value = parts[0] + parts[1];
                 }
+                else {
+                    token.value = parts[0] + ' ' + parts[1];
+                }
+                var offsetDifference = token.value.length - tokenValue.length;
+                indexOffset += offsetDifference;
             }
         }
         return tokens;
+    };
+    BrightScriptFormatter.prototype.getCompositeKeywordParts = function (token) {
+        var lowerValue = token.value.toLowerCase();
+        //split the parts of the token, but retain their case
+        if (lowerValue.indexOf('end') === 0) {
+            return [token.value.substring(0, 3), token.value.substring(3).trim()];
+        }
+        else {
+            return [token.value.substring(0, 4), token.value.substring(4).trim()];
+        }
     };
     BrightScriptFormatter.prototype.formatKeywordCasing = function (tokens, options) {
         for (var _i = 0, tokens_4 = tokens; _i < tokens_4.length; _i++) {
             var token = tokens_4[_i];
             //if this token is a keyword
             if (brightscript_parser_1.KeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                switch (options.keywordCasing) {
+                switch (options.keywordCase) {
                     case 'lower':
                         token.value = token.value.toLowerCase();
                         break;
@@ -226,8 +233,8 @@ var BrightScriptFormatter = /** @class */ (function () {
         var fullOptions = {
             indentStyle: 'spaces',
             indentSpaceCount: 4,
-            keywordCasing: 'lower',
-            breakCompositeKeywords: false
+            keywordCase: 'lower',
+            compositeKeywords: 'split'
         };
         if (options) {
             for (var attrname in options) {
