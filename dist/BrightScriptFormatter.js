@@ -169,7 +169,9 @@ var BrightScriptFormatter = /** @class */ (function () {
                 }
                 else if (outdentTokens.indexOf(token.tokenType) > -1) {
                     tabCount--;
-                    thisTabCount--;
+                    if (foundIndentorThisLine === false) {
+                        thisTabCount--;
+                    }
                     //this is an interum token
                 }
                 else if (interumTokens.indexOf(token.tokenType) > -1) {

@@ -70,6 +70,11 @@ describe('BrightScriptFormatter', () => {
         });
     });
 
+    fit('handles special cases', () => {
+        let program = `function http_request()\n    scope = {request: request, port: port, url: url, immediatelyFailed: true}\nend function`;
+        expect(formatter.format(program)).toEqual(program);
+    });
+
     describe('keywordCase', () => {
         it('forces keywords to upper case', () => {
             expect(formatter.format(

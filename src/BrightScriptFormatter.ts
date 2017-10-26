@@ -170,7 +170,9 @@ export class BrightScriptFormatter {
                     //this is an outdentor token
                 } else if (outdentTokens.indexOf(token.tokenType) > -1) {
                     tabCount--;
-                    thisTabCount--;
+                    if (foundIndentorThisLine === false) {
+                        thisTabCount--;
+                    }
                     //this is an interum token
                 } else if (interumTokens.indexOf(token.tokenType) > -1) {
                     //these need outdented, but don't change the tabCount 
