@@ -178,5 +178,10 @@ describe('BrightScriptFormatter', () => {
             expect(tokens[1].startIndex).toEqual(7);
             expect(tokens[2].startIndex).toEqual(8);
         });
+
+        fit('handles multi-line arrays', () => {
+            let program = `function DoSomething()\ndata=[\n1,\n2\n]\nend function`;
+            expect(formatter.format(program)).toEqual(`function DoSomething()\n    data=[\n        1,\n        2\n    ]\nend function`);
+        });
     });
 });

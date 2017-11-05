@@ -133,10 +133,12 @@ var BrightScriptFormatter = /** @class */ (function () {
             brightscript_parser_1.TokenType.function,
             brightscript_parser_1.TokenType.if,
             brightscript_parser_1.TokenType.openCurlyBraceSymbol,
+            brightscript_parser_1.TokenType.openSquareBraceSymbol,
             brightscript_parser_1.TokenType.while
         ];
         var outdentTokens = [
             brightscript_parser_1.TokenType.closeCurlyBraceSymbol,
+            brightscript_parser_1.TokenType.closeSquareBraceSymbol,
             brightscript_parser_1.TokenType.endFunction,
             brightscript_parser_1.TokenType.endIf,
             brightscript_parser_1.TokenType.endSub,

@@ -134,10 +134,12 @@ export class BrightScriptFormatter {
             TokenType.function,
             TokenType.if,
             TokenType.openCurlyBraceSymbol,
+            TokenType.openSquareBraceSymbol,
             TokenType.while
         ];
         let outdentTokens = [
             TokenType.closeCurlyBraceSymbol,
+            TokenType.closeSquareBraceSymbol,
             TokenType.endFunction,
             TokenType.endIf,
             TokenType.endSub,
