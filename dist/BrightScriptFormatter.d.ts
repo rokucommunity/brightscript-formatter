@@ -1,6 +1,10 @@
 export declare class BrightScriptFormatter {
     constructor();
     /**
+     * The default number of spaces when indenting with spaces
+     */
+    private static DEFAULT_INDENT_SPACE_COUNT;
+    /**
      * Format the given input.
      * @param inputText the text to format
      * @param formattingOptions options specifying formatting preferences

@@ -190,7 +190,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             }
             var leadingWhitespace = void 0;
             if (options.indentStyle === 'spaces') {
-                var spaceCount = thisTabCount * 4;
+                var indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
+                var spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
             }
             else {
@@ -242,7 +243,7 @@ var BrightScriptFormatter = /** @class */ (function () {
     BrightScriptFormatter.prototype.normalizeOptions = function (options) {
         var fullOptions = {
             indentStyle: 'spaces',
-            indentSpaceCount: 4,
+            indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
             compositeKeywords: 'split'
         };
@@ -253,6 +254,10 @@ var BrightScriptFormatter = /** @class */ (function () {
         }
         return fullOptions;
     };
+    /**
+     * The default number of spaces when indenting with spaces
+     */
+    BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT = 4;
     return BrightScriptFormatter;
 }());
 exports.BrightScriptFormatter = BrightScriptFormatter;

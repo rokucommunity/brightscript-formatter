@@ -43,7 +43,7 @@ describe('BrightScriptFormatter', () => {
         it('handles intermediate elseif', () => {
             expect(formatter.format(
                 `sub add()\nif true then\na=1\nelse if true then\na=1\nend if\nend sub`)).toEqual(
-                `sub add()\n    if true then\n        a=1\n    else if true then\n        a=1\n    end if\nend sub`
+                    `sub add()\n    if true then\n        a=1\n    else if true then\n        a=1\n    end if\nend sub`
                 );
         });
 
@@ -52,13 +52,13 @@ describe('BrightScriptFormatter', () => {
                 `sub main()\n if msg.isScreenClosed() then return\n end sub`)
             ).toEqual(
                 `sub main()\n    if msg.isScreenClosed() then return\nend sub`
-                );
+            );
 
             expect(formatter.format(
                 `sub main()\n if msg.isScreenClosed() then\n return\nend if\n end sub`)
             ).toEqual(
                 `sub main()\n    if msg.isScreenClosed() then\n        return\n    end if\nend sub`
-                );
+            );
         });
 
         it('handles line comments', () => {
@@ -66,11 +66,27 @@ describe('BrightScriptFormatter', () => {
                 `sub main()\n'comment1\n'comment2\nend sub`)
             ).toEqual(
                 `sub main()\n    'comment1\n    'comment2\nend sub`
-                );
+            );
         });
     });
 
-    fit('handles special cases', () => {
+    describe('indentSpaceCount', () => {
+        it('defaults to 4 spaces', () => {
+            let formatted = formatter.format(`sub main()\n'comment1\n'comment2\nend sub`);
+            expect(formatted.indexOf('    ')).toEqual(11);
+        });
+
+        it('allows overriding indentSpaceCount', () => {
+            expect(formatter.format(
+                `sub main()\n'comment1\n'comment2\nend sub`
+                , { indentSpaceCount: 2 }
+            )).toEqual(
+                `sub main()\n  'comment1\n  'comment2\nend sub`
+            );
+        });
+    });
+
+    it('handles special cases', () => {
         let program = `function http_request()\n    scope = {request: request, port: port, url: url, immediatelyFailed: true}\nend function`;
         expect(formatter.format(program)).toEqual(program);
     });
@@ -179,7 +195,7 @@ describe('BrightScriptFormatter', () => {
             expect(tokens[2].startIndex).toEqual(8);
         });
 
-        fit('handles multi-line arrays', () => {
+        it('handles multi-line arrays', () => {
             let program = `function DoSomething()\ndata=[\n1,\n2\n]\nend function`;
             expect(formatter.format(program)).toEqual(`function DoSomething()\n    data=[\n        1,\n        2\n    ]\nend function`);
         });

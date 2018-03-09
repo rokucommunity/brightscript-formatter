@@ -4,6 +4,10 @@ export class BrightScriptFormatter {
 
     }
     /**
+     * The default number of spaces when indenting with spaces
+     */
+    private static DEFAULT_INDENT_SPACE_COUNT = 4;
+    /**
      * Format the given input.
      * @param inputText the text to format
      * @param formattingOptions options specifying formatting preferences
@@ -190,7 +194,8 @@ export class BrightScriptFormatter {
             let leadingWhitespace: string;
 
             if (options.indentStyle === 'spaces') {
-                let spaceCount = thisTabCount * 4;
+                let indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
+                let spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
             } else {
                 leadingWhitespace = Array(thisTabCount + 1).join('\t');
@@ -246,7 +251,7 @@ export class BrightScriptFormatter {
     private normalizeOptions(options: FormattingOptions | undefined) {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
-            indentSpaceCount: 4,
+            indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
             compositeKeywords: 'split'
         };
