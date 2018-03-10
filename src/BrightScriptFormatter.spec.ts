@@ -35,6 +35,18 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).toEqual(program);
         });
 
+        it('works when specified as undefined', () => {
+            let program = `sub add(a,b)\n    return a+b\nend sub`;
+            expect(formatter.format(program, { indentStyle: undefined })).toEqual(program);
+        });
+
+
+        it('formats sing tabs', () => {
+            let program = `sub add(a,b)\n\treturn a+b\nend sub`;
+            expect(formatter.format(program, { indentStyle: 'tabs' })).toEqual(program);
+        });
+
+
         it('formats improperly formatted programs', () => {
             expect(formatter.format(`sub add()\nreturn a+b\nend sub`)).toEqual(`sub add()\n    return a+b\nend sub`);
             expect(formatter.format(`    sub add()\n        return a+b\n    end sub`)).toEqual(`sub add()\n    return a+b\nend sub`);
@@ -84,11 +96,32 @@ describe('BrightScriptFormatter', () => {
                 `sub main()\n  'comment1\n  'comment2\nend sub`
             );
         });
+
+        it('handles default when invalid provided', () => {
+            expect(formatter.format(
+                `sub main()\n'comment1\n'comment2\nend sub`
+                , { indentSpaceCount: undefined }
+            )).toEqual(
+                `sub main()\n    'comment1\n    'comment2\nend sub`
+            );
+        });
     });
 
-    it('handles special cases', () => {
-        let program = `function http_request()\n    scope = {request: request, port: port, url: url, immediatelyFailed: true}\nend function`;
-        expect(formatter.format(program)).toEqual(program);
+    describe('special cases', () => {
+        it('open close brace on same line', () => {
+            let program = `function http_request()\n    scope = {request: request, port: port, url: url, immediatelyFailed: true}\nend function`;
+            expect(formatter.format(program)).toEqual(program);
+        });
+
+        it('nested if statements', () => {
+            let program = `if (a) then\n    doSomething()\nelse\n    if (b) then\n        doSomething()\n    end if\nend if`;
+            expect(formatter.format(program)).toEqual(program);
+        });
+
+        it('method called "next"', () => {
+            let program = `if true then\n    m.top.returnString = m.someArray.next()\nend if`;
+            expect(formatter.format(program)).toEqual(program);
+        });
     });
 
     describe('keywordCase', () => {
@@ -139,6 +172,20 @@ describe('BrightScriptFormatter', () => {
             );
         });
 
+    });
+
+    describe('composite keywords', () => {
+        it('joins together when specified', () => {
+            expect(formatter.format(
+                `if true then\n    break\nelse if true then\n    break\nend if`,
+                {
+                    keywordCase: 'lower',
+                    compositeKeywords: 'combine'
+                }
+            )).toEqual(
+                `if true then\n    break\nelseif true then\n    break\nendif`
+            );
+        });
     });
 
     describe('break composite keywords', () => {

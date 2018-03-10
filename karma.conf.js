@@ -13,6 +13,9 @@ module.exports = function (config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         sourceMap: true
+      },
+      coverageOptions: {
+        instrumentation: true
       }
     },
     reporters: ['progress', 'karma-typescript'],
