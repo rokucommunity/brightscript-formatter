@@ -168,24 +168,43 @@ export class BrightScriptFormatter {
             let lineTokens = lineObj.tokens;
             let thisTabCount = tabCount;
             let foundIndentorThisLine = false;
+            //track the "if" and "then" tokens so we can handle single-line if statements
+            let foundIfStatementThisLine = false;
+            let foundThenStatementThisLine = false;
+
             for (let token of lineTokens) {
-                //if this is an indentor token, 
-                if (indentTokens.indexOf(token.tokenType) > -1) {
+                if (token.tokenType === TokenType.if) {
+                    foundIfStatementThisLine = true;
+                }
+                //single-line if statement
+                if (foundIfStatementThisLine && token.tokenType === TokenType.then) {
+                    foundThenStatementThisLine = true;
+                }
+
+                //if this is a single-line "if" statement (because there is stuff AFTER the "then")
+                if (
+                    foundIfStatementThisLine &&
+                    foundThenStatementThisLine &&
+                    [TokenType.then, TokenType.whitespace, TokenType.newline].indexOf(token.tokenType) === -1
+                ) {
+                    tabCount--;
+
+                    //if this is an indentor token, 
+                } else if (indentTokens.indexOf(token.tokenType) > -1) {
                     tabCount++;
                     foundIndentorThisLine = true;
+
                     //this is an outdentor token
                 } else if (outdentTokens.indexOf(token.tokenType) > -1) {
                     tabCount--;
                     if (foundIndentorThisLine === false) {
                         thisTabCount--;
                     }
+
                     //this is an interum token
                 } else if (interumTokens.indexOf(token.tokenType) > -1) {
                     //these need outdented, but don't change the tabCount 
                     thisTabCount--;
-                } else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
-                    //a return statement on the same line as an indentor means we don't want to indent
-                    tabCount--;
                 }
             }
             /* istanbul ignore next */

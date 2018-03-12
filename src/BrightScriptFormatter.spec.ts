@@ -131,6 +131,11 @@ describe('BrightScriptFormatter', () => {
             program = `lineups_index["audio"] = CreateObject("roAssociativeArray")\nlineups_index["video"] = CreateObject("roAssociativeArray")\nci = 0`;
             expect(formatter.format(program)).toEqual(program);
         });
+
+        it('handles single-line if statements', () => {
+            let program = `sub test()\n    if true then break\nend sub`;
+            expect(formatter.format(program)).toEqual(program);
+        });
     });
 
     describe('keywordCase', () => {
