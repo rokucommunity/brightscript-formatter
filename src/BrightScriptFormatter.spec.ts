@@ -40,12 +40,10 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program, { indentStyle: undefined })).toEqual(program);
         });
 
-
         it('formats sing tabs', () => {
             let program = `sub add(a,b)\n\treturn a+b\nend sub`;
             expect(formatter.format(program, { indentStyle: 'tabs' })).toEqual(program);
         });
-
 
         it('formats improperly formatted programs', () => {
             expect(formatter.format(`sub add()\nreturn a+b\nend sub`)).toEqual(`sub add()\n    return a+b\nend sub`);
@@ -120,6 +118,17 @@ describe('BrightScriptFormatter', () => {
 
         it('method called "next"', () => {
             let program = `if true then\n    m.top.returnString = m.someArray.next()\nend if`;
+            expect(formatter.format(program)).toEqual(program);
+        });
+
+        it('handles string multiple string literals on same line', () => {
+            let program = `function test()\n    asdf = "asdf: " + anytostring(m.asdf["asdf"])\nend function`;
+            expect(formatter.format(program)).toEqual(program);
+
+            program = `if (m.externalAuth) then\n    jsonData["Access Type"] = "Accessible"\nelse\n    jsonData["Access Type"] = "Link Required"\nend if`;
+            expect(formatter.format(program)).toEqual(program);
+
+            program = `lineups_index["audio"] = CreateObject("roAssociativeArray")\nlineups_index["video"] = CreateObject("roAssociativeArray")\nci = 0`;
             expect(formatter.format(program)).toEqual(program);
         });
     });

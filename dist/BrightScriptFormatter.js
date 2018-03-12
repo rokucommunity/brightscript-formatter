@@ -185,6 +185,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                     tabCount--;
                 }
             }
+            /* istanbul ignore next */
             if (thisTabCount < 0 || tabCount < 0) {
                 throw new Error('TabCount is less than zero for ' + JSON.stringify(lineTokens));
             }
@@ -213,6 +214,7 @@ var BrightScriptFormatter = /** @class */ (function () {
             if (lineTokens[lineTokens.length - 1].tokenType === brightscript_parser_1.TokenType.END_OF_FILE) {
                 break outer;
             }
+            /* istanbul ignore next */
             if (outerLoopCounter === tokens.length * 2) {
                 throw new Error('Something went terribly wrong');
             }
