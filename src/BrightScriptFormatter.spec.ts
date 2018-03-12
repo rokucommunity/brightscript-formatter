@@ -1,4 +1,4 @@
-import { TokenType } from 'brightscript-parser';
+import { BrightScriptLexer, TokenType } from 'brightscript-parser';
 import { BrightScriptFormatter } from './BrightScriptFormatter';
 
 describe('BrightScriptFormatter', () => {
@@ -131,9 +131,17 @@ describe('BrightScriptFormatter', () => {
             program = `lineups_index["audio"] = CreateObject("roAssociativeArray")\nlineups_index["video"] = CreateObject("roAssociativeArray")\nci = 0`;
             expect(formatter.format(program)).toEqual(program);
         });
-
-        it('handles single-line if statements', () => {
+        it('handles single-line if-then statements', () => {
             let program = `sub test()\n    if true then break\nend sub`;
+            expect(formatter.format(program)).toEqual(program);
+        });
+        it('handles single-line if-then-else statements', () => {
+            let program = `sub test()\n    if true then break else break\nend sub`;
+            expect(formatter.format(program)).toEqual(program);
+        });
+
+        it('handles resetting outdent when gone into the negative', () => {
+            let program = `sub test()\n    if true then\n        doSomething()\n    end if\nend if\nend sub\nsub test2()\n    doSomething()\nend sub`;
             expect(formatter.format(program)).toEqual(program);
         });
     });

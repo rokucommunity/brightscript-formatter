@@ -168,49 +168,46 @@ export class BrightScriptFormatter {
             let lineTokens = lineObj.tokens;
             let thisTabCount = tabCount;
             let foundIndentorThisLine = false;
-            //track the "if" and "then" tokens so we can handle single-line if statements
-            let foundIfStatementThisLine = false;
-            let foundThenStatementThisLine = false;
 
-            for (let token of lineTokens) {
-                if (token.tokenType === TokenType.if) {
-                    foundIfStatementThisLine = true;
-                }
-                //single-line if statement
-                if (foundIfStatementThisLine && token.tokenType === TokenType.then) {
-                    foundThenStatementThisLine = true;
-                }
+            //if this is a single-line if statement, do nothing with indentation
+            if (this.isSingleLineIfStatement(lineTokens, tokens)) {
+                // //if this line has a return statement, outdent
+                // if (this.tokenIndexOf(TokenType.return, lineTokens) > -1) {
+                //     tabCount--;
+                // } else {
+                //     //do nothing with single-line if statement indentation
+                // }
 
-                //if this is a single-line "if" statement (because there is stuff AFTER the "then")
-                if (
-                    foundIfStatementThisLine &&
-                    foundThenStatementThisLine &&
-                    [TokenType.then, TokenType.whitespace, TokenType.newline].indexOf(token.tokenType) === -1
-                ) {
-                    tabCount--;
-
+            } else {
+                for (let token of lineTokens) {
                     //if this is an indentor token, 
-                } else if (indentTokens.indexOf(token.tokenType) > -1) {
-                    tabCount++;
-                    foundIndentorThisLine = true;
+                    if (indentTokens.indexOf(token.tokenType) > -1) {
+                        tabCount++;
+                        foundIndentorThisLine = true;
 
-                    //this is an outdentor token
-                } else if (outdentTokens.indexOf(token.tokenType) > -1) {
-                    tabCount--;
-                    if (foundIndentorThisLine === false) {
+                        //this is an outdentor token
+                    } else if (outdentTokens.indexOf(token.tokenType) > -1) {
+                        tabCount--;
+                        if (foundIndentorThisLine === false) {
+                            thisTabCount--;
+                        }
+
+                        //this is an interum token
+                    } else if (interumTokens.indexOf(token.tokenType) > -1) {
+                        //these need outdented, but don't change the tabCount 
                         thisTabCount--;
                     }
+                    //  else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
+                    //     //a return statement on the same line as an indentor means we don't want to indent
+                    //     tabCount--;
+                    // }
 
-                    //this is an interum token
-                } else if (interumTokens.indexOf(token.tokenType) > -1) {
-                    //these need outdented, but don't change the tabCount 
-                    thisTabCount--;
                 }
             }
-            /* istanbul ignore next */
-            if (thisTabCount < 0 || tabCount < 0) {
-                throw new Error('TabCount is less than zero for ' + JSON.stringify(lineTokens));
-            }
+            //if the tab counts are less than zero, something is wrong. However, at least try to do formatting as best we can by resetting to 0
+            thisTabCount = thisTabCount < 0 ? 0 : thisTabCount;
+            tabCount = tabCount < 0 ? 0 : tabCount;
+
             let leadingWhitespace: string;
 
             if (options.indentStyle === 'spaces') {
@@ -244,6 +241,16 @@ export class BrightScriptFormatter {
             }
         }
         return outputTokens;
+    }
+
+    private tokenIndexOf(tokenType: TokenType, tokens: Token[]) {
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.tokenType === tokenType) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -282,6 +289,32 @@ export class BrightScriptFormatter {
             }
         }
         return fullOptions;
+    }
+
+    private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {
+        let ifIndex = this.tokenIndexOf(TokenType.if, lineTokens);
+        if (ifIndex === -1) {
+            return false;
+        }
+        let thenIndex = this.tokenIndexOf(TokenType.then, lineTokens);
+        let elseIndex = this.tokenIndexOf(TokenType.else, lineTokens);
+        //if there's an else on this line, assume this is a one-line if statement
+        if (elseIndex > -1) {
+            return true;
+        }
+
+        //see if there is anything after the "then". If so, assume it's a one-line if statement
+        for (let i = thenIndex + 1; i < lineTokens.length; i++) {
+            let token = lineTokens[i];
+            if (token.tokenType === TokenType.whitespace || token.tokenType === TokenType.newline) {
+                //do nothing with whitespace and newlines
+
+            } else {
+                //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
+                return true;
+            }
+        }
+        return false;
     }
 }
 
