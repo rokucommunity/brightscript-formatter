@@ -36,9 +36,12 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('works when specified as undefined', () => {
-            let program = `sub add(a,b)\n    return a+b\nend sub`;
-            expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
+        it('defaults to 4 spaces when specified as undefined', () => {
+            let program = `    sub add(a,b)\n        return a+b\n    end sub`;
+            expect(formatter.format(program, { indentStyle: undefined })).to.equal(
+                `sub add(a,b)\n    return a+b\nend sub`
+            );
+
         });
 
         it('formats sing tabs', () => {
@@ -132,10 +135,12 @@ describe('BrightScriptFormatter', () => {
             program = `lineups_index["audio"] = CreateObject("roAssociativeArray")\nlineups_index["video"] = CreateObject("roAssociativeArray")\nci = 0`;
             expect(formatter.format(program)).to.equal(program);
         });
+
         it('handles single-line if-then statements', () => {
             let program = `sub test()\n    if true then break\nend sub`;
             expect(formatter.format(program)).to.equal(program);
         });
+
         it('handles single-line if-then-else statements', () => {
             let program = `sub test()\n    if true then break else break\nend sub`;
             expect(formatter.format(program)).to.equal(program);

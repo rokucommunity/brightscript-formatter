@@ -288,6 +288,9 @@ export class BrightScriptFormatter {
                 fullOptions[attrname] = options[attrname];
             }
         }
+        if (!fullOptions.indentStyle) {
+            fullOptions.indentStyle = 'spaces';
+        }
         return fullOptions;
     }
 
