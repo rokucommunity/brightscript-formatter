@@ -21,6 +21,7 @@
         "radix": false,
         "eofline": false,
         "interface-name": false,
+        "ordered-imports": false,
         "member-ordering": false,
         "whitespace": {
             "options": [

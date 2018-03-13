@@ -19,6 +19,7 @@ export declare class BrightScriptFormatter {
     private getCompositeKeywordParts(token);
     private formatKeywordCasing(tokens, options);
     private formatIndentation(tokens, options);
+    private tokenIndexOf(tokenType, tokens);
     /**
      * Get the tokens for the whole line starting at the given index
      * @param startIndex
@@ -26,6 +27,7 @@ export declare class BrightScriptFormatter {
      */
     private getLineTokens(startIndex, tokens);
     private normalizeOptions(options);
+    private isSingleLineIfStatement(lineTokens, allTokens);
 }
 /**
  * A set of formatting options used to determine how the file should be formatted.

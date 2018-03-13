@@ -161,34 +161,44 @@ var BrightScriptFormatter = /** @class */ (function () {
             var lineTokens = lineObj.tokens;
             var thisTabCount = tabCount;
             var foundIndentorThisLine = false;
-            for (var _i = 0, lineTokens_1 = lineTokens; _i < lineTokens_1.length; _i++) {
-                var token = lineTokens_1[_i];
-                //if this is an indentor token, 
-                if (indentTokens.indexOf(token.tokenType) > -1) {
-                    tabCount++;
-                    foundIndentorThisLine = true;
-                    //this is an outdentor token
-                }
-                else if (outdentTokens.indexOf(token.tokenType) > -1) {
-                    tabCount--;
-                    if (foundIndentorThisLine === false) {
+            //if this is a single-line if statement, do nothing with indentation
+            if (this.isSingleLineIfStatement(lineTokens, tokens)) {
+                // //if this line has a return statement, outdent
+                // if (this.tokenIndexOf(TokenType.return, lineTokens) > -1) {
+                //     tabCount--;
+                // } else {
+                //     //do nothing with single-line if statement indentation
+                // }
+            }
+            else {
+                for (var _i = 0, lineTokens_1 = lineTokens; _i < lineTokens_1.length; _i++) {
+                    var token = lineTokens_1[_i];
+                    //if this is an indentor token, 
+                    if (indentTokens.indexOf(token.tokenType) > -1) {
+                        tabCount++;
+                        foundIndentorThisLine = true;
+                        //this is an outdentor token
+                    }
+                    else if (outdentTokens.indexOf(token.tokenType) > -1) {
+                        tabCount--;
+                        if (foundIndentorThisLine === false) {
+                            thisTabCount--;
+                        }
+                        //this is an interum token
+                    }
+                    else if (interumTokens.indexOf(token.tokenType) > -1) {
+                        //these need outdented, but don't change the tabCount 
                         thisTabCount--;
                     }
-                    //this is an interum token
-                }
-                else if (interumTokens.indexOf(token.tokenType) > -1) {
-                    //these need outdented, but don't change the tabCount 
-                    thisTabCount--;
-                }
-                else if (token.tokenType === brightscript_parser_1.TokenType.return && foundIndentorThisLine) {
-                    //a return statement on the same line as an indentor means we don't want to indent
-                    tabCount--;
+                    //  else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
+                    //     //a return statement on the same line as an indentor means we don't want to indent
+                    //     tabCount--;
+                    // }
                 }
             }
-            /* istanbul ignore next */
-            if (thisTabCount < 0 || tabCount < 0) {
-                throw new Error('TabCount is less than zero for ' + JSON.stringify(lineTokens));
-            }
+            //if the tab counts are less than zero, something is wrong. However, at least try to do formatting as best we can by resetting to 0
+            thisTabCount = thisTabCount < 0 ? 0 : thisTabCount;
+            tabCount = tabCount < 0 ? 0 : tabCount;
             var leadingWhitespace = void 0;
             if (options.indentStyle === 'spaces') {
                 var indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
@@ -220,6 +230,15 @@ var BrightScriptFormatter = /** @class */ (function () {
             }
         }
         return outputTokens;
+    };
+    BrightScriptFormatter.prototype.tokenIndexOf = function (tokenType, tokens) {
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.tokenType === tokenType) {
+                return i;
+            }
+        }
+        return -1;
     };
     /**
      * Get the tokens for the whole line starting at the given index
@@ -255,6 +274,30 @@ var BrightScriptFormatter = /** @class */ (function () {
             }
         }
         return fullOptions;
+    };
+    BrightScriptFormatter.prototype.isSingleLineIfStatement = function (lineTokens, allTokens) {
+        var ifIndex = this.tokenIndexOf(brightscript_parser_1.TokenType.if, lineTokens);
+        if (ifIndex === -1) {
+            return false;
+        }
+        var thenIndex = this.tokenIndexOf(brightscript_parser_1.TokenType.then, lineTokens);
+        var elseIndex = this.tokenIndexOf(brightscript_parser_1.TokenType.else, lineTokens);
+        //if there's an else on this line, assume this is a one-line if statement
+        if (elseIndex > -1) {
+            return true;
+        }
+        //see if there is anything after the "then". If so, assume it's a one-line if statement
+        for (var i = thenIndex + 1; i < lineTokens.length; i++) {
+            var token = lineTokens[i];
+            if (token.tokenType === brightscript_parser_1.TokenType.whitespace || token.tokenType === brightscript_parser_1.TokenType.newline) {
+                //do nothing with whitespace and newlines
+            }
+            else {
+                //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * The default number of spaces when indenting with spaces

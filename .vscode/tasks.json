@@ -11,6 +11,15 @@
             "type": "npm",
             "script": "compile",
             "problemMatcher": []
+        },
+        {
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "type": "npm",
+            "script": "test",
+            "problemMatcher": []
         }
     ]
 }
