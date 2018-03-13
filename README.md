@@ -1,5 +1,10 @@
 # brightscript-formatter
+
 A code formatter for Roku's BrightScript language
+
+
+[![Build Status](https://travis-ci.org/TwitchBronBron/brightscript-formatter.svg?branch=master)](https://travis-ci.org/TwitchBronBron/brightscript-formatter)
+[![Coverage Status](https://coveralls.io/repos/github/TwitchBronBron/brightscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/TwitchBronBron/brightscript-formatter?branch=master)
 
 ## Usage
 ```javascript
