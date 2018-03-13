@@ -10,7 +10,7 @@ describe('BrightScriptFormatter', () => {
     });
 
     describe('getCompositeKeywordParts', () => {
-        it.only('works', () => {
+        it('works flawlessly', () => {
             let parts;
             parts = (formatter as any).getCompositeKeywordParts({ value: 'endif' });
             expect(parts[0]).to.equal('end');
