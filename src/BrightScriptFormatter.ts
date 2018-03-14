@@ -325,7 +325,7 @@ export interface FormattingOptions {
     /**
      * The type of indentation to use when indenting the beginning of lines.
      */
-    indentStyle?: 'tabs' | 'spaces' | null;
+    indentStyle?: 'tabs' | 'spaces' | 'existing';
     /**
      * The number of spaces to use when indentStyle is 'spaces'. Default is 4
      */

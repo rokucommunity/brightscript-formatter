@@ -36,8 +36,8 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('works when specified as undefined', () => {
-            let program = `sub add(a,b)\n    return a+b\nend sub`;
+        it('skips indentation when indentStyle:undefined', () => {
+            let program = `    sub add(a,b)\nreturn a+b\n    end sub`;
             expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
         });
 
@@ -132,10 +132,12 @@ describe('BrightScriptFormatter', () => {
             program = `lineups_index["audio"] = CreateObject("roAssociativeArray")\nlineups_index["video"] = CreateObject("roAssociativeArray")\nci = 0`;
             expect(formatter.format(program)).to.equal(program);
         });
+
         it('handles single-line if-then statements', () => {
             let program = `sub test()\n    if true then break\nend sub`;
             expect(formatter.format(program)).to.equal(program);
         });
+
         it('handles single-line if-then-else statements', () => {
             let program = `sub test()\n    if true then break else break\nend sub`;
             expect(formatter.format(program)).to.equal(program);
@@ -144,6 +146,14 @@ describe('BrightScriptFormatter', () => {
         it('handles resetting outdent when gone into the negative', () => {
             let program = `sub test()\n    if true then\n        doSomething()\n    end if\nend if\nend sub\nsub test2()\n    doSomething()\nend sub`;
             expect(formatter.format(program)).to.equal(program);
+        });
+
+        it('it works with identifiers that start with rem', () => {
+            expect(formatter.format(
+                `    if (removeFoo <> invalid) then\n        lineups["video"].push(invalid)`
+            )).to.equal(
+                `if (removeFoo <> invalid) then\n    lineups["video"].push(invalid)`
+            );
         });
     });
 

@@ -273,6 +273,9 @@ var BrightScriptFormatter = /** @class */ (function () {
                 fullOptions[attrname] = options[attrname];
             }
         }
+        if (!fullOptions.indentStyle) {
+            fullOptions.indentStyle = 'spaces';
+        }
         return fullOptions;
     };
     BrightScriptFormatter.prototype.isSingleLineIfStatement = function (lineTokens, allTokens) {
