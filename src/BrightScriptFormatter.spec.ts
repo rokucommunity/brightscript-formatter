@@ -155,6 +155,12 @@ describe('BrightScriptFormatter', () => {
                 `if (removeFoo <> invalid) then\n    lineups["video"].push(invalid)`
             );
         });
+
+        //this does not work yet. 
+        it.skip('works with if statements that do not have a "then" after them', () => {
+            let program = `if (request.AsyncGetToString())\n    scope.immediatelyFailed = false\nelse\n    scope.immediatelyFailed = true\nend if`;
+            expect(formatter.format(program)).to.equal(program);
+        });
     });
 
     describe('keywordCase', () => {
