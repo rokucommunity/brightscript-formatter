@@ -36,12 +36,9 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('defaults to 4 spaces when specified as undefined', () => {
-            let program = `    sub add(a,b)\n        return a+b\n    end sub`;
-            expect(formatter.format(program, { indentStyle: undefined })).to.equal(
-                `sub add(a,b)\n    return a+b\nend sub`
-            );
-
+        it('skips indentation when indentStyle:undefined', () => {
+            let program = `    sub add(a,b)\nreturn a+b\n    end sub`;
+            expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
         });
 
         it('formats sing tabs', () => {
@@ -149,6 +146,14 @@ describe('BrightScriptFormatter', () => {
         it('handles resetting outdent when gone into the negative', () => {
             let program = `sub test()\n    if true then\n        doSomething()\n    end if\nend if\nend sub\nsub test2()\n    doSomething()\nend sub`;
             expect(formatter.format(program)).to.equal(program);
+        });
+
+        it('it works with identifiers that start with rem', () => {
+            expect(formatter.format(
+                `    if (removeFoo <> invalid) then\n        lineups["video"].push(invalid)`
+            )).to.equal(
+                `if (removeFoo <> invalid) then\n    lineups["video"].push(invalid)`
+            );
         });
     });
 
