@@ -26,3 +26,18 @@ var formattedFileContents = formatter.format(unformattedFileContents, formatting
 
 ## Formatting Options
 Click [here](https://github.com/TwitchBronBron/brightscript-formatter/blob/master/src/BrightScriptFormatter.ts#L265) to view all of the formatting options
+
+## Known issues
+
+ - All multi-line `if` statements must have `then` at the end. This is a result of not actually parsing the brightscript code before running the formatter. 
+    ```brightscript
+    ' This will not format properly
+    if true 
+        doSomething()
+    end if
+    
+    'but this will
+    if true then
+        doSomething()
+    end if
+    ````
