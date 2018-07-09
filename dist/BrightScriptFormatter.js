@@ -1,9 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 var brightscript_parser_1 = require("brightscript-parser");
+var trimRight = require("trim-right");
 var BrightScriptFormatter = /** @class */ (function () {
-    function BrightScriptFormatter() {
-    }
+    function BrightScriptFormatter() {}
     /**
      * Format the given input.
      * @param inputText the text to format
@@ -23,6 +25,9 @@ var BrightScriptFormatter = /** @class */ (function () {
         }
         if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
+        }
+        if (options.removeTrailingWhiteSpace) {
+            tokens = this.formatTrailingWhiteSpace(tokens, options);
         }
         //join all tokens back together into a single string
         var outputText = '';
@@ -63,8 +68,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                 var tokenValue = token.value;
                 if (options.compositeKeywords === 'combine') {
                     token.value = parts[0] + parts[1];
-                }
-                else {
+                } else {
                     token.value = parts[0] + ' ' + parts[1];
                 }
                 var offsetDifference = token.value.length - tokenValue.length;
@@ -78,8 +82,7 @@ var BrightScriptFormatter = /** @class */ (function () {
         //split the parts of the token, but retain their case
         if (lowerValue.indexOf('end') === 0) {
             return [token.value.substring(0, 3), token.value.substring(3).trim()];
-        }
-        else {
+        } else {
             return [token.value.substring(0, 4), token.value.substring(4).trim()];
         }
     };
@@ -99,27 +102,25 @@ var BrightScriptFormatter = /** @class */ (function () {
                         var lowerValue = token.value.toLowerCase();
                         if (brightscript_parser_1.CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
                             token.value = token.value.substring(0, 1).toUpperCase() + token.value.substring(1).toLowerCase();
-                        }
-                        else {
+                        } else {
                             var spaceCharCount = (lowerValue.match(/\s+/) || []).length;
                             var firstWordLength = 0;
                             if (lowerValue.indexOf('end') === 0) {
                                 firstWordLength = 3;
-                            }
-                            else {
+                            } else {
                                 firstWordLength = 4;
                             }
                             token.value =
                                 //first character
                                 token.value.substring(0, 1).toUpperCase() +
-                                    //rest of first word
-                                    token.value.substring(1, firstWordLength).toLowerCase() +
-                                    //add back the whitespace
-                                    token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
-                                    //first character of second word
-                                    token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
-                                    //rest of second word
-                                    token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
+                                //rest of first word
+                                token.value.substring(1, firstWordLength).toLowerCase() +
+                                //add back the whitespace
+                                token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
+                                //first character of second word
+                                token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
+                                //rest of second word
+                                token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
                         }
                 }
             }
@@ -169,8 +170,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                 // } else {
                 //     //do nothing with single-line if statement indentation
                 // }
-            }
-            else {
+            } else {
                 for (var _i = 0, lineTokens_1 = lineTokens; _i < lineTokens_1.length; _i++) {
                     var token = lineTokens_1[_i];
                     //if this is an indentor token, 
@@ -178,15 +178,13 @@ var BrightScriptFormatter = /** @class */ (function () {
                         tabCount++;
                         foundIndentorThisLine = true;
                         //this is an outdentor token
-                    }
-                    else if (outdentTokens.indexOf(token.tokenType) > -1) {
+                    } else if (outdentTokens.indexOf(token.tokenType) > -1) {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
                         }
                         //this is an interum token
-                    }
-                    else if (interumTokens.indexOf(token.tokenType) > -1) {
+                    } else if (interumTokens.indexOf(token.tokenType) > -1) {
                         //these need outdented, but don't change the tabCount 
                         thisTabCount--;
                     }
@@ -204,8 +202,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                 var indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
                 var spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
-            }
-            else {
+            } else {
                 leadingWhitespace = Array(thisTabCount + 1).join('\t');
             }
             //create a whitespace token if there isn't one
@@ -231,6 +228,37 @@ var BrightScriptFormatter = /** @class */ (function () {
         }
         return outputTokens;
     };
+    /**
+     * Remove all trailing whitespace
+     */
+    BrightScriptFormatter.prototype.formatTrailingWhiteSpace = function (tokens, options) {
+        var nextLineStartTokenIndex = 0;
+        //the list of output tokens
+        var outputTokens = [];
+        //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
+        for (var outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
+            var lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
+            nextLineStartTokenIndex = lineObj.stopIndex + 1;
+            var lineTokens = lineObj.tokens;
+            //the last token is newline or EOF, so the next-to-last token is where the trailing whitespace would reside
+            var potentialWhitespaceTokenIndex = lineTokens.length - 2;
+            var whitespaceTokenCandidate = lineTokens[potentialWhitespaceTokenIndex];
+            //if the final token is whitespace, throw it away
+            if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.whitespace) {
+                lineTokens.splice(potentialWhitespaceTokenIndex, 1);
+                //if the final token is a comment, trim the whitespace from the righthand side
+            } else if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.quoteComment || whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.remComment) {
+                whitespaceTokenCandidate.value = trimRight(whitespaceTokenCandidate.value);
+            }
+            //add this line to the output
+            outputTokens.push.apply(outputTokens, lineTokens);
+            //if we have found the end of file, quit the loop
+            if (lineTokens[lineTokens.length - 1].tokenType === brightscript_parser_1.TokenType.END_OF_FILE) {
+                break;
+            }
+        }
+        return outputTokens;
+    };
     BrightScriptFormatter.prototype.tokenIndexOf = function (tokenType, tokens) {
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
@@ -241,7 +269,7 @@ var BrightScriptFormatter = /** @class */ (function () {
         return -1;
     };
     /**
-     * Get the tokens for the whole line starting at the given index
+     * Get the tokens for the whole line starting at the given index (including the newline or EOF token at the end)
      * @param startIndex
      * @param tokens
      */
@@ -266,7 +294,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             indentStyle: 'spaces',
             indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
-            compositeKeywords: 'split'
+            compositeKeywords: 'split',
+            removeTrailingWhiteSpace: true
         };
         if (options) {
             for (var attrname in options) {
@@ -294,8 +323,7 @@ var BrightScriptFormatter = /** @class */ (function () {
             var token = lineTokens[i];
             if (token.tokenType === brightscript_parser_1.TokenType.whitespace || token.tokenType === brightscript_parser_1.TokenType.newline) {
                 //do nothing with whitespace and newlines
-            }
-            else {
+            } else {
                 //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
                 return true;
             }

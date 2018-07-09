@@ -19,9 +19,13 @@ export declare class BrightScriptFormatter {
     private getCompositeKeywordParts(token);
     private formatKeywordCasing(tokens, options);
     private formatIndentation(tokens, options);
+    /**
+     * Remove all trailing whitespace
+     */
+    private formatTrailingWhiteSpace(tokens, options);
     private tokenIndexOf(tokenType, tokens);
     /**
-     * Get the tokens for the whole line starting at the given index
+     * Get the tokens for the whole line starting at the given index (including the newline or EOF token at the end)
      * @param startIndex
      * @param tokens
      */
@@ -36,7 +40,7 @@ export interface FormattingOptions {
     /**
      * The type of indentation to use when indenting the beginning of lines.
      */
-    indentStyle?: 'tabs' | 'spaces' | null;
+    indentStyle?: 'tabs' | 'spaces' | 'existing';
     /**
      * The number of spaces to use when indentStyle is 'spaces'. Default is 4
      */
@@ -53,4 +57,9 @@ export interface FormattingOptions {
      * If null, they are not modified.
      */
     compositeKeywords?: 'split' | 'combine' | null;
+    /**
+     * If true (the default), trailing white space is removed
+     * If false, trailing white space is left intact
+     */
+    removeTrailingWhiteSpace?: boolean;
 }

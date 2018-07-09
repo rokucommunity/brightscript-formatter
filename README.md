@@ -25,7 +25,7 @@ var formattedFileContents = formatter.format(unformattedFileContents, formatting
 
 
 ## Formatting Options
-Click [here](https://github.com/TwitchBronBron/brightscript-formatter/blob/master/src/BrightScriptFormatter.ts#L265) to view all of the formatting options
+Click [here](https://github.com/TwitchBronBron/brightscript-formatter/blob/master/src/BrightScriptFormatter.ts#L368) to view all of the formatting options
 
 ## Known issues
 

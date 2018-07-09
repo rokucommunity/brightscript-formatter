@@ -1,4 +1,6 @@
 import { BrightScriptLexer, CompositeKeywordTokenTypes, KeywordTokenTypes, Token, TokenType } from 'brightscript-parser';
+import * as trimRight from 'trim-right';
+
 export class BrightScriptFormatter {
     constructor() {
 
@@ -30,6 +32,9 @@ export class BrightScriptFormatter {
 
         if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
+        }
+        if (options.removeTrailingWhiteSpace) {
+            tokens = this.formatTrailingWhiteSpace(tokens, options);
         }
 
         //join all tokens back together into a single string
@@ -243,6 +248,44 @@ export class BrightScriptFormatter {
         return outputTokens;
     }
 
+    /**
+     * Remove all trailing whitespace
+     */
+    private formatTrailingWhiteSpace(tokens: Token[], options: FormattingOptions) {
+        let nextLineStartTokenIndex = 0;
+        //the list of output tokens
+        let outputTokens: Token[] = [];
+
+        //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
+        for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
+            let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
+
+            nextLineStartTokenIndex = lineObj.stopIndex + 1;
+            let lineTokens = lineObj.tokens;
+            //the last token is newline or EOF, so the next-to-last token is where the trailing whitespace would reside
+            let potentialWhitespaceTokenIndex = lineTokens.length - 2;
+
+            let whitespaceTokenCandidate = lineTokens[potentialWhitespaceTokenIndex];
+            //if the final token is whitespace, throw it away
+            if (whitespaceTokenCandidate.tokenType === TokenType.whitespace) {
+                lineTokens.splice(potentialWhitespaceTokenIndex, 1);
+
+                //if the final token is a comment, trim the whitespace from the righthand side
+            } else if (whitespaceTokenCandidate.tokenType === TokenType.quoteComment || whitespaceTokenCandidate.tokenType === TokenType.remComment) {
+                whitespaceTokenCandidate.value = trimRight(whitespaceTokenCandidate.value);
+            }
+
+            //add this line to the output
+            outputTokens.push.apply(outputTokens, lineTokens);
+
+            //if we have found the end of file, quit the loop
+            if (lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE) {
+                break;
+            }
+        }
+        return outputTokens;
+    }
+
     private tokenIndexOf(tokenType: TokenType, tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
@@ -254,7 +297,7 @@ export class BrightScriptFormatter {
     }
 
     /**
-     * Get the tokens for the whole line starting at the given index
+     * Get the tokens for the whole line starting at the given index (including the newline or EOF token at the end)
      * @param startIndex
      * @param tokens 
      */
@@ -281,7 +324,8 @@ export class BrightScriptFormatter {
             indentStyle: 'spaces',
             indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
-            compositeKeywords: 'split'
+            compositeKeywords: 'split',
+            removeTrailingWhiteSpace: true
         };
         if (options) {
             for (let attrname in options) {
@@ -342,4 +386,10 @@ export interface FormattingOptions {
      * If null, they are not modified.
      */
     compositeKeywords?: 'split' | 'combine' | null;
+    /**
+     * If true (the default), trailing white space is removed
+     * If false, trailing white space is left intact
+     */
+    removeTrailingWhiteSpace?: boolean;
+
 }

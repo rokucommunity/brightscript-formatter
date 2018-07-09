@@ -227,6 +227,35 @@ describe('BrightScriptFormatter', () => {
         });
     });
 
+    describe('removeTrailingWhitespace', () => {
+        it('removes trailing spaces by default', () => {
+            expect(formatter.format(`name = "bob" `)).to.equal(`name = "bob"`);
+        });
+        it('removes trailing tabs by default', () => {
+            expect(formatter.format(`name = "bob"\t`)).to.equal(`name = "bob"`);
+        });
+        it('removes both tabs and spaces in same line', () => {
+            expect(formatter.format(`name = "bob"\t `)).to.equal(`name = "bob"`);
+            expect(formatter.format(`name = "bob" \t`)).to.equal(`name = "bob"`);
+        });
+        it('removes whitespace from end of comment', () => {
+            expect(formatter.format(`'comment `)).to.equal(`'comment`);
+            expect(formatter.format(`'comment\t`)).to.equal(`'comment`);
+            expect(formatter.format(`'comment \t`)).to.equal(`'comment`);
+            expect(formatter.format(`'comment\t `)).to.equal(`'comment`);
+        });
+        it('handles multi-line prorgams', () => {
+            expect(formatter.format(`name = "bob"\t \nage=22 `)).to.equal(`name = "bob"\nage=22`);
+        });
+        it('leaves normal programs alone', () => {
+            expect(formatter.format(`name = "bob"\nage=22 `)).to.equal(`name = "bob"\nage=22`);
+        });
+        it('skips formatting when the option is set to false', () => {
+            expect(formatter.format(`name = "bob" `, { removeTrailingWhiteSpace: false })).to.equal(`name = "bob" `);
+
+        });
+    });
+
     describe('break composite keywords', () => {
         function format(text, tokenType) {
             let token = {
