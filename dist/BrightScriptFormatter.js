@@ -1,11 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
+Object.defineProperty(exports, "__esModule", { value: true });
 var brightscript_parser_1 = require("brightscript-parser");
 var trimRight = require("trim-right");
 var BrightScriptFormatter = /** @class */ (function () {
-    function BrightScriptFormatter() {}
+    function BrightScriptFormatter() {
+    }
     /**
      * Format the given input.
      * @param inputText the text to format
@@ -68,7 +67,8 @@ var BrightScriptFormatter = /** @class */ (function () {
                 var tokenValue = token.value;
                 if (options.compositeKeywords === 'combine') {
                     token.value = parts[0] + parts[1];
-                } else {
+                }
+                else { // if(options.compositeKeywords === 'split'){
                     token.value = parts[0] + ' ' + parts[1];
                 }
                 var offsetDifference = token.value.length - tokenValue.length;
@@ -82,7 +82,11 @@ var BrightScriptFormatter = /** @class */ (function () {
         //split the parts of the token, but retain their case
         if (lowerValue.indexOf('end') === 0) {
             return [token.value.substring(0, 3), token.value.substring(3).trim()];
-        } else {
+        }
+        else if (lowerValue.indexOf('#else') === 0) {
+            return [token.value.substring(0, 5), token.value.substring(5).trim()];
+        }
+        else { // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
             return [token.value.substring(0, 4), token.value.substring(4).trim()];
         }
     };
@@ -102,25 +106,27 @@ var BrightScriptFormatter = /** @class */ (function () {
                         var lowerValue = token.value.toLowerCase();
                         if (brightscript_parser_1.CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
                             token.value = token.value.substring(0, 1).toUpperCase() + token.value.substring(1).toLowerCase();
-                        } else {
+                        }
+                        else {
                             var spaceCharCount = (lowerValue.match(/\s+/) || []).length;
                             var firstWordLength = 0;
                             if (lowerValue.indexOf('end') === 0) {
                                 firstWordLength = 3;
-                            } else {
+                            }
+                            else { //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
                                 firstWordLength = 4;
                             }
                             token.value =
                                 //first character
                                 token.value.substring(0, 1).toUpperCase() +
-                                //rest of first word
-                                token.value.substring(1, firstWordLength).toLowerCase() +
-                                //add back the whitespace
-                                token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
-                                //first character of second word
-                                token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
-                                //rest of second word
-                                token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
+                                    //rest of first word
+                                    token.value.substring(1, firstWordLength).toLowerCase() +
+                                    //add back the whitespace
+                                    token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
+                                    //first character of second word
+                                    token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
+                                    //rest of second word
+                                    token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
                         }
                 }
             }
@@ -135,7 +141,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             brightscript_parser_1.TokenType.if,
             brightscript_parser_1.TokenType.openCurlyBraceSymbol,
             brightscript_parser_1.TokenType.openSquareBraceSymbol,
-            brightscript_parser_1.TokenType.while
+            brightscript_parser_1.TokenType.while,
+            brightscript_parser_1.TokenType.condIf
         ];
         var outdentTokens = [
             brightscript_parser_1.TokenType.closeCurlyBraceSymbol,
@@ -146,10 +153,13 @@ var BrightScriptFormatter = /** @class */ (function () {
             brightscript_parser_1.TokenType.endWhile,
             brightscript_parser_1.TokenType.endFor,
             brightscript_parser_1.TokenType.next,
+            brightscript_parser_1.TokenType.condEndIf
         ];
         var interumTokens = [
             brightscript_parser_1.TokenType.else,
-            brightscript_parser_1.TokenType.elseIf
+            brightscript_parser_1.TokenType.elseIf,
+            brightscript_parser_1.TokenType.condElse,
+            brightscript_parser_1.TokenType.condElseIf
         ];
         var tabCount = 0;
         var nextLineStartTokenIndex = 0;
@@ -170,22 +180,25 @@ var BrightScriptFormatter = /** @class */ (function () {
                 // } else {
                 //     //do nothing with single-line if statement indentation
                 // }
-            } else {
+            }
+            else {
                 for (var _i = 0, lineTokens_1 = lineTokens; _i < lineTokens_1.length; _i++) {
                     var token = lineTokens_1[_i];
-                    //if this is an indentor token, 
+                    //if this is an indentor token,
                     if (indentTokens.indexOf(token.tokenType) > -1) {
                         tabCount++;
                         foundIndentorThisLine = true;
                         //this is an outdentor token
-                    } else if (outdentTokens.indexOf(token.tokenType) > -1) {
+                    }
+                    else if (outdentTokens.indexOf(token.tokenType) > -1) {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
                         }
                         //this is an interum token
-                    } else if (interumTokens.indexOf(token.tokenType) > -1) {
-                        //these need outdented, but don't change the tabCount 
+                    }
+                    else if (interumTokens.indexOf(token.tokenType) > -1) {
+                        //these need outdented, but don't change the tabCount
                         thisTabCount--;
                     }
                     //  else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
@@ -202,7 +215,8 @@ var BrightScriptFormatter = /** @class */ (function () {
                 var indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
                 var spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
-            } else {
+            }
+            else {
                 leadingWhitespace = Array(thisTabCount + 1).join('\t');
             }
             //create a whitespace token if there isn't one
@@ -215,7 +229,7 @@ var BrightScriptFormatter = /** @class */ (function () {
             }
             //replace the whitespace with the formatted whitespace
             lineTokens[0].value = leadingWhitespace;
-            //add this list of tokens 
+            //add this list of tokens
             outputTokens.push.apply(outputTokens, lineTokens);
             //if we have found the end of file
             if (lineTokens[lineTokens.length - 1].tokenType === brightscript_parser_1.TokenType.END_OF_FILE) {
@@ -247,7 +261,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.whitespace) {
                 lineTokens.splice(potentialWhitespaceTokenIndex, 1);
                 //if the final token is a comment, trim the whitespace from the righthand side
-            } else if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.quoteComment || whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.remComment) {
+            }
+            else if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.quoteComment || whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.remComment) {
                 whitespaceTokenCandidate.value = trimRight(whitespaceTokenCandidate.value);
             }
             //add this line to the output
@@ -302,9 +317,6 @@ var BrightScriptFormatter = /** @class */ (function () {
                 fullOptions[attrname] = options[attrname];
             }
         }
-        if (!fullOptions.indentStyle) {
-            fullOptions.indentStyle = 'spaces';
-        }
         return fullOptions;
     };
     BrightScriptFormatter.prototype.isSingleLineIfStatement = function (lineTokens, allTokens) {
@@ -323,7 +335,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             var token = lineTokens[i];
             if (token.tokenType === brightscript_parser_1.TokenType.whitespace || token.tokenType === brightscript_parser_1.TokenType.newline) {
                 //do nothing with whitespace and newlines
-            } else {
+            }
+            else {
                 //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
                 return true;
             }

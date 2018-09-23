@@ -14,24 +14,24 @@ export declare class BrightScriptFormatter {
      * Remove all whitespace in the composite keyword tokens with a single space
      * @param tokens
      */
-    private normalizeCompositeKeywords(tokens);
-    private formatCompositeKeywords(tokens, options);
-    private getCompositeKeywordParts(token);
-    private formatKeywordCasing(tokens, options);
-    private formatIndentation(tokens, options);
+    private normalizeCompositeKeywords;
+    private formatCompositeKeywords;
+    private getCompositeKeywordParts;
+    private formatKeywordCasing;
+    private formatIndentation;
     /**
      * Remove all trailing whitespace
      */
-    private formatTrailingWhiteSpace(tokens, options);
-    private tokenIndexOf(tokenType, tokens);
+    private formatTrailingWhiteSpace;
+    private tokenIndexOf;
     /**
      * Get the tokens for the whole line starting at the given index (including the newline or EOF token at the end)
      * @param startIndex
      * @param tokens
      */
-    private getLineTokens(startIndex, tokens);
-    private normalizeOptions(options);
-    private isSingleLineIfStatement(lineTokens, allTokens);
+    private getLineTokens;
+    private normalizeOptions;
+    private isSingleLineIfStatement;
 }
 /**
  * A set of formatting options used to determine how the file should be formatted.

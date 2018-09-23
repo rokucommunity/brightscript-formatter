@@ -27,6 +27,10 @@ describe('BrightScriptFormatter', () => {
             parts = (formatter as any).getCompositeKeywordParts({ value: 'else if' });
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
+
+            parts = (formatter as any).getCompositeKeywordParts({ value: '#else if' });
+            expect(parts[0]).to.equal('#else');
+            expect(parts[1]).to.equal('if');
         });
     });
 

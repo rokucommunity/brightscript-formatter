@@ -44,7 +44,7 @@
   },
   "homepage": "https://github.com/TwitchBronBron/brightscript-formatter#readme",
   "dependencies": {
-    "brightscript-parser": "^1.0.3-1",
+    "brightscript-parser": "https://github.com/evgygor/brightscript-parser/tarball/master",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
