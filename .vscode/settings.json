@@ -5,8 +5,8 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
+        "**/node_modules": true,
         "**/coverage": true
     },
-    "window.title": "BRS Formatter - ${activeEditorShort}${separator}${appName}",
-    "prettier.singleQuote": true
+    "window.title": "BRS Formatter - ${activeEditorShort}${separator}${appName}"
 }

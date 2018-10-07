@@ -68,7 +68,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                 if (options.compositeKeywords === 'combine') {
                     token.value = parts[0] + parts[1];
                 }
-                else { // if(options.compositeKeywords === 'split'){
+                else {
                     token.value = parts[0] + ' ' + parts[1];
                 }
                 var offsetDifference = token.value.length - tokenValue.length;
@@ -86,7 +86,7 @@ var BrightScriptFormatter = /** @class */ (function () {
         else if (lowerValue.indexOf('#else') === 0) {
             return [token.value.substring(0, 5), token.value.substring(5).trim()];
         }
-        else { // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
+        else {
             return [token.value.substring(0, 4), token.value.substring(4).trim()];
         }
     };
@@ -113,7 +113,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                             if (lowerValue.indexOf('end') === 0) {
                                 firstWordLength = 3;
                             }
-                            else { //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
+                            else {
                                 firstWordLength = 4;
                             }
                             token.value =
