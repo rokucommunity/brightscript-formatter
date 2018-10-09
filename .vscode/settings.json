@@ -8,5 +8,11 @@
         "**/node_modules": true,
         "**/coverage": true
     },
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
+    "typescript.autoClosingTags": true,
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
     "window.title": "BRS Formatter - ${activeEditorShort}${separator}${appName}"
 }
