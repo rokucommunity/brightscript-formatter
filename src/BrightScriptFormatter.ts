@@ -79,7 +79,8 @@ export class BrightScriptFormatter {
         let tokenValue = token.value;
         if (options.compositeKeywords === 'combine') {
           token.value = parts[0] + parts[1];
-        } else {// if(options.compositeKeywords === 'split'){
+        } else {
+          // if(options.compositeKeywords === 'split'){
           token.value = parts[0] + ' ' + parts[1];
         }
         let offsetDifference = token.value.length - tokenValue.length;
@@ -95,9 +96,10 @@ export class BrightScriptFormatter {
     if (lowerValue.indexOf('end') === 0) {
       return [token.value.substring(0, 3), token.value.substring(3).trim()];
     } else if (lowerValue.indexOf('#else') === 0) {
-        return [token.value.substring(0, 5), token.value.substring(5).trim()];
-    } else {// if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
-        return [token.value.substring(0, 4), token.value.substring(4).trim()];
+      return [token.value.substring(0, 5), token.value.substring(5).trim()];
+    } else {
+      // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
+      return [token.value.substring(0, 4), token.value.substring(4).trim()];
     }
   }
 
@@ -115,13 +117,16 @@ export class BrightScriptFormatter {
           case 'title':
             let lowerValue = token.value.toLowerCase();
             if (CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
-              token.value = token.value.substring(0, 1).toUpperCase() + token.value.substring(1).toLowerCase();
+              token.value =
+                token.value.substring(0, 1).toUpperCase() +
+                token.value.substring(1).toLowerCase();
             } else {
               let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
               let firstWordLength: number = 0;
               if (lowerValue.indexOf('end') === 0) {
                 firstWordLength = 3;
-              } else { //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
+              } else {
+                //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
                 firstWordLength = 4;
               }
               token.value =
@@ -130,11 +135,21 @@ export class BrightScriptFormatter {
                 //rest of first word
                 token.value.substring(1, firstWordLength).toLowerCase() +
                 //add back the whitespace
-                token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
+                token.value.substring(
+                  firstWordLength,
+                  firstWordLength + spaceCharCount
+                ) +
                 //first character of second word
-                token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
+                token.value
+                  .substring(
+                    firstWordLength + spaceCharCount,
+                    firstWordLength + spaceCharCount + 1
+                  )
+                  .toUpperCase() +
                 //rest of second word
-                token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
+                token.value
+                  .substring(firstWordLength + spaceCharCount + 1)
+                  .toLowerCase();
             }
         }
       }
@@ -176,7 +191,11 @@ export class BrightScriptFormatter {
     //the list of output tokens
     let outputTokens: Token[] = [];
     //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
-    outer: for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
+    outer: for (
+      let outerLoopCounter = 0;
+      outerLoopCounter <= tokens.length * 2;
+      outerLoopCounter++
+    ) {
       let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
       nextLineStartTokenIndex = lineObj.stopIndex + 1;
@@ -224,7 +243,9 @@ export class BrightScriptFormatter {
       let leadingWhitespace: string;
 
       if (options.indentStyle === 'spaces') {
-        let indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
+        let indentSpaceCount = options.indentSpaceCount
+          ? options.indentSpaceCount
+          : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
         let spaceCount = thisTabCount * indentSpaceCount;
         leadingWhitespace = Array(spaceCount + 1).join(' ');
       } else {
@@ -245,7 +266,9 @@ export class BrightScriptFormatter {
       //add this list of tokens
       outputTokens.push.apply(outputTokens, lineTokens);
       //if we have found the end of file
-      if (lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE) {
+      if (
+        lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE
+      ) {
         break outer;
       }
       /* istanbul ignore next */
@@ -259,13 +282,20 @@ export class BrightScriptFormatter {
   /**
    * Remove all trailing whitespace
    */
-  private formatTrailingWhiteSpace(tokens: Token[], options: FormattingOptions) {
+  private formatTrailingWhiteSpace(
+    tokens: Token[],
+    options: FormattingOptions
+  ) {
     let nextLineStartTokenIndex = 0;
     //the list of output tokens
     let outputTokens: Token[] = [];
 
     //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
-    for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
+    for (
+      let outerLoopCounter = 0;
+      outerLoopCounter <= tokens.length * 2;
+      outerLoopCounter++
+    ) {
       let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
       nextLineStartTokenIndex = lineObj.stopIndex + 1;
@@ -279,15 +309,22 @@ export class BrightScriptFormatter {
         lineTokens.splice(potentialWhitespaceTokenIndex, 1);
 
         //if the final token is a comment, trim the whitespace from the righthand side
-      } else if (whitespaceTokenCandidate.tokenType === TokenType.quoteComment || whitespaceTokenCandidate.tokenType === TokenType.remComment) {
-        whitespaceTokenCandidate.value = trimRight(whitespaceTokenCandidate.value);
+      } else if (
+        whitespaceTokenCandidate.tokenType === TokenType.quoteComment ||
+        whitespaceTokenCandidate.tokenType === TokenType.remComment
+      ) {
+        whitespaceTokenCandidate.value = trimRight(
+          whitespaceTokenCandidate.value
+        );
       }
 
       //add this line to the output
       outputTokens.push.apply(outputTokens, lineTokens);
 
       //if we have found the end of file, quit the loop
-      if (lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE) {
+      if (
+        lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE
+      ) {
         break;
       }
     }
@@ -316,7 +353,10 @@ export class BrightScriptFormatter {
       let token = tokens[index];
       outputTokens[outputTokens.length] = token;
 
-      if (token.tokenType === TokenType.newline || token.tokenType === TokenType.END_OF_FILE) {
+      if (
+        token.tokenType === TokenType.newline ||
+        token.tokenType === TokenType.END_OF_FILE
+      ) {
         break;
       }
     }
@@ -358,7 +398,10 @@ export class BrightScriptFormatter {
     //see if there is anything after the "then". If so, assume it's a one-line if statement
     for (let i = thenIndex + 1; i < lineTokens.length; i++) {
       let token = lineTokens[i];
-      if (token.tokenType === TokenType.whitespace || token.tokenType === TokenType.newline) {
+      if (
+        token.tokenType === TokenType.whitespace ||
+        token.tokenType === TokenType.newline
+      ) {
         //do nothing with whitespace and newlines
       } else {
         //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
