@@ -27,6 +27,10 @@ describe('BrightScriptFormatter', () => {
             parts = (formatter as any).getCompositeKeywordParts({ value: 'else if' });
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
+
+            parts = (formatter as any).getCompositeKeywordParts({ value: '#else if' });
+            expect(parts[0]).to.equal('#else');
+            expect(parts[1]).to.equal('if');
         });
     });
 
@@ -313,6 +317,34 @@ describe('BrightScriptFormatter', () => {
         it('handles multi-line arrays', () => {
             let program = `function DoSomething()\ndata=[\n1,\n2\n]\nend function`;
             expect(formatter.format(program)).to.equal(`function DoSomething()\n    data=[\n        1,\n        2\n    ]\nend function`);
+        });
+    });
+
+    describe('indentStyle for conditional block', () => {
+        it('correctly fixes the indentation', () => {
+            let expected = `#if isDebug\n    doSomething()\n#end if`;
+            let current = `#if isDebug\n doSomething()\n#end if`;
+            expect(formatter.format(current)).to.equal(expected);
+        });
+
+        it('skips indentation when indentStyle:undefined for conditional block', () => {
+            let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
+            expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
+        });
+
+        it('correctly fixes the indentation2', () => {
+            let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
+            expect(formatter.format(program)).to.equal(program);
+        });
+
+        it('correctly fixes the indentation nested if in conditional block', () => {
+            let program = `#if isDebug\n    if true then\n        doSomething()\n    end if\n#end if`;
+            expect(formatter.format(program)).to.equal(program);
+        });
+
+        it('correctly fixes the indentation nested #if in if block', () => {
+            let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
+            expect(formatter.format(program)).to.equal(program);
         });
     });
 });
