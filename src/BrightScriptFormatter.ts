@@ -394,6 +394,10 @@ export class BrightScriptFormatter {
         if (elseIndex > -1) {
             return true;
         }
+        //if there's no then, then it can't be a one line statement
+        if (thenIndex == -1) {
+            return false;
+        }
 
         //see if there is anything after the "then". If so, assume it's a one-line if statement
         for (let i = thenIndex + 1; i < lineTokens.length; i++) {
