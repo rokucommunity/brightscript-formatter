@@ -365,7 +365,7 @@ export class BrightScriptFormatter {
             }
         }
         return {
-            startIndex,
+            startIndex: startIndex,
             stopIndex: index,
             tokens: outputTokens
         };
@@ -400,7 +400,7 @@ export class BrightScriptFormatter {
             return true;
         }
         //if there's no then, then it can't be a one line statement
-        if (thenIndex == -1) {
+        if (thenIndex === -1) {
             return false;
         }
 

@@ -7,6 +7,7 @@
   "scripts": {
     "compile": "rimraf dist && tsc",
     "prepublishOnly": "npm run compile",
+    "tslint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace --bail",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
@@ -58,6 +59,8 @@
     "source-map-support": "^0.5.3",
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-origin-ordered-imports-rule": "^1.1.2",
     "typescript": "^2.7.2"
   }
 }
