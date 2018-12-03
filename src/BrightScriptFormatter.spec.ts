@@ -216,6 +216,72 @@ describe('BrightScriptFormatter', () => {
 
     });
 
+    describe('keywordCaseOverride', () => {
+        it('overrides default casing and uses lower case', () => {
+            expect(formatter.format(
+                `Sub add()\n    If true Then\n        a=1\n    ElseIf true Then\n        a=1\n    EndIf\nEndSub`,
+                {
+                    keywordCase: 'upper',
+                    compositeKeywords: null,
+                    keywordCaseOverride: {
+                        sub: "lower",
+                        endSub: "lower"
+                    }
+                }
+            )).to.equal(
+                `sub add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nendsub`,
+            );
+        });
+        it('overrides default casing and uses upper case', () => {
+            expect(formatter.format(
+                `Sub add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nEndSub`,
+                {
+                    keywordCase: 'lower',
+                    compositeKeywords: null,
+                    keywordCaseOverride: {
+                        sub: "upper",
+                        endSub: "upper"
+                    }
+                }
+            )).to.equal(
+                `SUB add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nENDSUB`,
+            );
+        });
+
+        it('overrides default casing and uses title case', () => {
+            expect(formatter.format(
+                `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    end if\nENDSUB`,
+                {
+                    keywordCase: 'lower',
+                    compositeKeywords: null,
+                    keywordCaseOverride: {
+                        sub: "title",
+                        endSub: "title"
+                    }
+                }
+            )).to.equal(
+                `Sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    end if\nEndSub`,
+            );
+        });
+
+        it('overrides default casing and leaves casing alone', () => {
+            expect(formatter.format(
+                `SuB add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    endif\nEnDSuB`,
+                {
+                    keywordCase: 'lower',
+                    compositeKeywords: null,
+                    keywordCaseOverride: {
+                        sub: null,
+                        endSub: null
+                    }
+                }
+            )).to.equal(
+                `SuB add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nEnDSuB`,
+            );
+        });
+
+    });
+
     describe('composite keywords', () => {
         it('joins together when specified', () => {
             expect(formatter.format(

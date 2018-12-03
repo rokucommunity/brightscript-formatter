@@ -107,7 +107,11 @@ export class BrightScriptFormatter {
         for (let token of tokens) {
             //if this token is a keyword
             if (KeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                switch (options.keywordCase) {
+                let keywordCase = options.keywordCase;
+                if (options.keywordCaseOverride && options.keywordCaseOverride[token.tokenType] !== undefined) {
+                    keywordCase = options.keywordCaseOverride[token.tokenType];
+                }
+                switch (keywordCase) {
                     case 'lower':
                         token.value = token.value.toLowerCase();
                         break;
@@ -373,7 +377,8 @@ export class BrightScriptFormatter {
             indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
             compositeKeywords: 'split',
-            removeTrailingWhiteSpace: true
+            removeTrailingWhiteSpace: true,
+            keywordCaseOverride: {}
         };
         if (options) {
             for (let attrname in options) {
@@ -445,4 +450,8 @@ export interface FormattingOptions {
      * If false, trailing white space is left intact
      */
     removeTrailingWhiteSpace?: boolean;
+    /**
+     * Provides a way to override keyword case at the individual TokenType level
+     */
+    keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
 }

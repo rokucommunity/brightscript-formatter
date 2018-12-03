@@ -62,4 +62,10 @@ export interface FormattingOptions {
      * If false, trailing white space is left intact
      */
     removeTrailingWhiteSpace?: boolean;
+    /**
+     * Provides a way to override keyword case at the individual TokenType level
+     */
+    keywordCaseOverride?: {
+        [id: string]: FormattingOptions['keywordCase'];
+    };
 }

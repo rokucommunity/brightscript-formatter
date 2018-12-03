@@ -69,6 +69,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                     token.value = parts[0] + parts[1];
                 }
                 else {
+                    // if(options.compositeKeywords === 'split'){
                     token.value = parts[0] + ' ' + parts[1];
                 }
                 var offsetDifference = token.value.length - tokenValue.length;
@@ -87,6 +88,7 @@ var BrightScriptFormatter = /** @class */ (function () {
             return [token.value.substring(0, 5), token.value.substring(5).trim()];
         }
         else {
+            // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
             return [token.value.substring(0, 4), token.value.substring(4).trim()];
         }
     };
@@ -95,7 +97,11 @@ var BrightScriptFormatter = /** @class */ (function () {
             var token = tokens_4[_i];
             //if this token is a keyword
             if (brightscript_parser_1.KeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                switch (options.keywordCase) {
+                var keywordCase = options.keywordCase;
+                if (options.keywordCaseOverride && options.keywordCaseOverride[token.tokenType] !== undefined) {
+                    keywordCase = options.keywordCaseOverride[token.tokenType];
+                }
+                switch (keywordCase) {
                     case 'lower':
                         token.value = token.value.toLowerCase();
                         break;
@@ -105,7 +111,9 @@ var BrightScriptFormatter = /** @class */ (function () {
                     case 'title':
                         var lowerValue = token.value.toLowerCase();
                         if (brightscript_parser_1.CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
-                            token.value = token.value.substring(0, 1).toUpperCase() + token.value.substring(1).toLowerCase();
+                            token.value =
+                                token.value.substring(0, 1).toUpperCase() +
+                                    token.value.substring(1).toLowerCase();
                         }
                         else {
                             var spaceCharCount = (lowerValue.match(/\s+/) || []).length;
@@ -114,6 +122,7 @@ var BrightScriptFormatter = /** @class */ (function () {
                                 firstWordLength = 3;
                             }
                             else {
+                                //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
                                 firstWordLength = 4;
                             }
                             token.value =
@@ -124,9 +133,13 @@ var BrightScriptFormatter = /** @class */ (function () {
                                     //add back the whitespace
                                     token.value.substring(firstWordLength, firstWordLength + spaceCharCount) +
                                     //first character of second word
-                                    token.value.substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1).toUpperCase() +
+                                    token.value
+                                        .substring(firstWordLength + spaceCharCount, firstWordLength + spaceCharCount + 1)
+                                        .toUpperCase() +
                                     //rest of second word
-                                    token.value.substring(firstWordLength + spaceCharCount + 1).toLowerCase();
+                                    token.value
+                                        .substring(firstWordLength + spaceCharCount + 1)
+                                        .toLowerCase();
                         }
                 }
             }
@@ -212,7 +225,9 @@ var BrightScriptFormatter = /** @class */ (function () {
             tabCount = tabCount < 0 ? 0 : tabCount;
             var leadingWhitespace = void 0;
             if (options.indentStyle === 'spaces') {
-                var indentSpaceCount = options.indentSpaceCount ? options.indentSpaceCount : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
+                var indentSpaceCount = options.indentSpaceCount
+                    ? options.indentSpaceCount
+                    : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
                 var spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
             }
@@ -262,7 +277,8 @@ var BrightScriptFormatter = /** @class */ (function () {
                 lineTokens.splice(potentialWhitespaceTokenIndex, 1);
                 //if the final token is a comment, trim the whitespace from the righthand side
             }
-            else if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.quoteComment || whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.remComment) {
+            else if (whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.quoteComment ||
+                whitespaceTokenCandidate.tokenType === brightscript_parser_1.TokenType.remComment) {
                 whitespaceTokenCandidate.value = trimRight(whitespaceTokenCandidate.value);
             }
             //add this line to the output
@@ -294,7 +310,8 @@ var BrightScriptFormatter = /** @class */ (function () {
         for (index = startIndex; index < tokens.length; index++) {
             var token = tokens[index];
             outputTokens[outputTokens.length] = token;
-            if (token.tokenType === brightscript_parser_1.TokenType.newline || token.tokenType === brightscript_parser_1.TokenType.END_OF_FILE) {
+            if (token.tokenType === brightscript_parser_1.TokenType.newline ||
+                token.tokenType === brightscript_parser_1.TokenType.END_OF_FILE) {
                 break;
             }
         }
@@ -310,7 +327,8 @@ var BrightScriptFormatter = /** @class */ (function () {
             indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
             keywordCase: 'lower',
             compositeKeywords: 'split',
-            removeTrailingWhiteSpace: true
+            removeTrailingWhiteSpace: true,
+            keywordCaseOverride: {}
         };
         if (options) {
             for (var attrname in options) {
@@ -330,10 +348,15 @@ var BrightScriptFormatter = /** @class */ (function () {
         if (elseIndex > -1) {
             return true;
         }
+        //if there's no then, then it can't be a one line statement
+        if (thenIndex == -1) {
+            return false;
+        }
         //see if there is anything after the "then". If so, assume it's a one-line if statement
         for (var i = thenIndex + 1; i < lineTokens.length; i++) {
             var token = lineTokens[i];
-            if (token.tokenType === brightscript_parser_1.TokenType.whitespace || token.tokenType === brightscript_parser_1.TokenType.newline) {
+            if (token.tokenType === brightscript_parser_1.TokenType.whitespace ||
+                token.tokenType === brightscript_parser_1.TokenType.newline) {
                 //do nothing with whitespace and newlines
             }
             else {
