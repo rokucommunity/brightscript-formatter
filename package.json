@@ -11,6 +11,9 @@
     "test": "nyc mocha src/**/*.spec.ts --full-trace --bail",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "nyc": {
     "include": [
       "src/**/!(*.spec).ts"
