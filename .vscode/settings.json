@@ -13,6 +13,5 @@
     "editor.detectIndentation": false,
     "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
     "typescript.autoClosingTags": true,
-    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
-    "window.title": "BRS Formatter - ${activeEditorShort}${separator}${appName}"
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false
 }
