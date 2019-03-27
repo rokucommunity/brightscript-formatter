@@ -37,6 +37,7 @@ export class BrightScriptFormatter {
         if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
         }
+
         if (options.removeTrailingWhiteSpace) {
             tokens = this.formatTrailingWhiteSpace(tokens, options);
         }
@@ -195,11 +196,7 @@ export class BrightScriptFormatter {
         //the list of output tokens
         let outputTokens: Token[] = [];
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
-        outer: for (
-            let outerLoopCounter = 0;
-            outerLoopCounter <= tokens.length * 2;
-            outerLoopCounter++
-        ) {
+        outer: for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
             let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
@@ -295,11 +292,7 @@ export class BrightScriptFormatter {
         let outputTokens: Token[] = [];
 
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
-        for (
-            let outerLoopCounter = 0;
-            outerLoopCounter <= tokens.length * 2;
-            outerLoopCounter++
-        ) {
+        for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
             let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
             nextLineStartTokenIndex = lineObj.stopIndex + 1;

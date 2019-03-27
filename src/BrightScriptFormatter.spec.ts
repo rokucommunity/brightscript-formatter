@@ -1,6 +1,7 @@
 import { BrightScriptLexer, TokenType } from 'brightscript-parser';
-import { BrightScriptFormatter } from './BrightScriptFormatter';
 import { expect } from 'chai';
+
+import { BrightScriptFormatter } from './BrightScriptFormatter';
 
 describe('BrightScriptFormatter', () => {
     let formatter: BrightScriptFormatter;
@@ -224,8 +225,8 @@ describe('BrightScriptFormatter', () => {
                     keywordCase: 'upper',
                     compositeKeywords: null,
                     keywordCaseOverride: {
-                        sub: "lower",
-                        endSub: "lower"
+                        sub: 'lower',
+                        endSub: 'lower'
                     }
                 }
             )).to.equal(
@@ -239,8 +240,8 @@ describe('BrightScriptFormatter', () => {
                     keywordCase: 'lower',
                     compositeKeywords: null,
                     keywordCaseOverride: {
-                        sub: "upper",
-                        endSub: "upper"
+                        sub: 'upper',
+                        endSub: 'upper'
                     }
                 }
             )).to.equal(
@@ -255,8 +256,8 @@ describe('BrightScriptFormatter', () => {
                     keywordCase: 'lower',
                     compositeKeywords: null,
                     keywordCaseOverride: {
-                        sub: "title",
-                        endSub: "title"
+                        sub: 'title',
+                        endSub: 'title'
                     }
                 }
             )).to.equal(
@@ -329,7 +330,7 @@ describe('BrightScriptFormatter', () => {
         function format(text, tokenType) {
             let token = {
                 value: text,
-                tokenType,
+                tokenType: tokenType,
                 startIndex: 0
             };
             let tokens = (formatter as any).formatCompositeKeywords([token], { compositeKeywords: 'split' });
