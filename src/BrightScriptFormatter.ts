@@ -30,7 +30,7 @@ export class BrightScriptFormatter {
             tokens = this.formatCompositeKeywords(tokens, options);
         }
 
-        if (options.indentStyle) {
+        if (options.formatIndent) {
             tokens = this.formatIndentation(tokens, options);
         }
 
@@ -368,6 +368,7 @@ export class BrightScriptFormatter {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
             indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
+            formatIndent: true,
             keywordCase: 'lower',
             compositeKeywords: 'split',
             removeTrailingWhiteSpace: true,
@@ -420,12 +421,18 @@ export class BrightScriptFormatter {
 export interface FormattingOptions {
     /**
      * The type of indentation to use when indenting the beginning of lines.
+     * Has no effect if `formatIndent` is false
      */
-    indentStyle?: 'tabs' | 'spaces' | 'existing';
+    indentStyle?: 'tabs' | 'spaces';
     /**
-     * The number of spaces to use when indentStyle is 'spaces'. Default is 4
+     * The number of spaces to use when indentStyle is 'spaces'. Default is 4.
+     * Has no effect if `formatIndent` is false
      */
     indentSpaceCount?: number;
+    /**
+     * If true, the code is indented. If false, the existing indentation is left intact.
+     */
+    formatIndent?: boolean;
     /**
      * Replaces all keywords with the upper or lower case settings specified.
      * If set to null, they are not modified at all.

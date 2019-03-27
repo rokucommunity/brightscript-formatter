@@ -41,9 +41,9 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('skips indentation when indentStyle:undefined', () => {
+        it('skips indentation when formatIndent === false', () => {
             let program = `    sub add(a,b)\nreturn a+b\n    end sub`;
-            expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
+            expect(formatter.format(program, { formatIndent: false })).to.equal(program);
         });
 
         it('formats sing tabs', () => {
@@ -393,9 +393,9 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(current)).to.equal(expected);
         });
 
-        it('skips indentation when indentStyle:undefined for conditional block', () => {
+        it('skips indentation when formatIndent===false for conditional block', () => {
             let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
-            expect(formatter.format(program, { indentStyle: undefined })).to.equal(program);
+            expect(formatter.format(program, { formatIndent: false })).to.equal(program);
         });
 
         it('correctly fixes the indentation2', () => {

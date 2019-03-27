@@ -31,11 +31,15 @@ export interface FormattingOptions {
     /**
      * The type of indentation to use when indenting the beginning of lines.
      */
-    indentStyle?: 'tabs' | 'spaces' | 'existing';
+    indentStyle?: 'tabs' | 'spaces';
     /**
      * The number of spaces to use when indentStyle is 'spaces'. Default is 4
      */
     indentSpaceCount?: number;
+    /**
+     * If false, no line indenting will be performed, and the existing line indentations will be retained.
+     */
+    formatIndent?: boolean;
     /**
      * Replaces all keywords with the upper or lower case settings specified.
      * If set to null, they are not modified at all.
