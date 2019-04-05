@@ -13,6 +13,7 @@
         "curly": true,
         "forin": false,
         "no-console": false,
+        "array-type": false,
         "interface-name": false,
         "max-classes-per-file": false,
         "max-line-length": [

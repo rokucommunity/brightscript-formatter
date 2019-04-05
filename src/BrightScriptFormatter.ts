@@ -42,6 +42,10 @@ export class BrightScriptFormatter {
             tokens = this.formatTrailingWhiteSpace(tokens, options);
         }
 
+        if (options.formatInteriorWhitespace) {
+            tokens = this.formatInteriorWhitespace(tokens, options);
+        }
+
         //join all tokens back together into a single string
         let outputText = '';
         for (let token of tokens) {
@@ -281,6 +285,179 @@ export class BrightScriptFormatter {
     }
 
     /**
+     * Force all whitespace between tokens to be exactly 1 space wide
+     */
+    private formatInteriorWhitespace(
+        tokens: Token[],
+        options: FormattingOptions
+    ) {
+        let leftPadTokenTypes = [
+            ...(options.spacingTokensBoth ? options.spacingTokensBoth : []),
+            ...(options.spacingTokensLeft ? options.spacingTokensLeft : [])
+        ];
+        let rightPadTokenTypes = [
+            ...(options.spacingTokensBoth ? options.spacingTokensBoth : []),
+            ...(options.spacingTokensRight ? options.spacingTokensRight : []),
+        ];
+        let isPastFirstTokenOfLine = false;
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            let nextTokenType: TokenType = <any>(tokens[i + 1] ? tokens[i + 1].tokenType : undefined);
+
+            //reset token indicator on newline
+            if (token.tokenType === TokenType.newline) {
+                isPastFirstTokenOfLine = false;
+                continue;
+            }
+            //skip past leading whitespace
+            if (token.tokenType === TokenType.whitespace && isPastFirstTokenOfLine === false) {
+                continue;
+            }
+            isPastFirstTokenOfLine = true;
+            //force token to be exactly 1 space
+            if (token.tokenType === TokenType.whitespace) {
+                token.value = ' ';
+            }
+
+            //pad any of these token types with a space to the right
+            if (rightPadTokenTypes.indexOf(token.tokenType) > -1) {
+                //special case: we want the negative sign to be directly beside a numeric, in certain cases.
+                //we can't handle every case, but we can get close
+                if (this.looksLikeNegativeNumericLiteral(tokens, i)) {
+                    //throw out the space to the right of the minus symbol if present
+                    if (i + 1 < tokens.length && tokens[i + 1].tokenType === TokenType.whitespace) {
+                        this.removeWhitespace(tokens, i + 1);
+                    }
+                    //ensure a space token to the right, only if we have more tokens to the right available
+                } else if ([TokenType.whitespace, TokenType.newline, TokenType.END_OF_FILE].indexOf(nextTokenType) === -1) {
+                    //don't add whitespace if the next token is the newline
+
+                    tokens.splice(i + 1, 0, {
+                        startIndex: -1,
+                        tokenType: TokenType.whitespace,
+                        value: ' '
+                    });
+                }
+            }
+
+            //pad any of these tokens with a space to the left
+            for (let leftPadTokenType of leftPadTokenTypes) {
+                if (this.isMatch(tokens, i, [leftPadTokenType])) {
+                    //ensure a space token to the left
+                    if (i > 0 && tokens[i - 1].tokenType !== TokenType.whitespace) {
+                        tokens.splice(i, 0, {
+                            startIndex: -1,
+                            tokenType: TokenType.whitespace,
+                            value: ' '
+                        });
+                        //increment i by 1 since we added a token
+                        i++;
+                        continue;
+                    }
+                }
+            }
+        }
+        return tokens;
+    }
+
+    /**
+     * Remove whitespace until the next non-whitespace character.
+     * This operates on the array itself
+     */
+    private removeWhitespace(tokens: Token[], index: number) {
+        while (tokens[index] && tokens[index].tokenType === TokenType.whitespace) {
+            tokens.splice(index, 1);
+            index++;
+        }
+    }
+
+    /**
+     * Anytime one of these tokens are found before a minus sign,
+     * we can safely assume the minus sign is associated with a negative numeric literal
+     */
+    private static tokensBeforeNegativeNumericLiteral = [
+        TokenType.plusSymbol,
+        TokenType.minusSymbol,
+        TokenType.asteriskSymbol,
+        TokenType.forwardSlashSymbol,
+        TokenType.backSlashSymbol,
+        TokenType.additionAssignmentSymbol,
+        TokenType.divisionAssignmentSymbol,
+        TokenType.subtractionAssignmentSymbol,
+        TokenType.multiplicationAssignmentSymbol,
+        TokenType.integerDivisionAssignmentSymbol,
+        TokenType.equalSymbol,
+        TokenType.notEqual,
+        TokenType.greaterThanSymbol,
+        TokenType.greaterThanOrEqual,
+        TokenType.lessThanSymbol,
+        TokenType.lessThanOrEqual,
+        TokenType.lessThanLessThanEqualSymbol,
+        TokenType.greaterThanGreaterThanEqualSymbol,
+        TokenType.return,
+        TokenType.to,
+        TokenType.step,
+        TokenType.colonSymbol,
+        TokenType.semicolonSymbol
+    ];
+
+    /**
+     * Determine if the current token appears to be the negative sign for a numeric leteral
+     */
+    private looksLikeNegativeNumericLiteral(tokens: Token[], index: number) {
+        let thisToken = tokens[index];
+        if (thisToken.tokenType === TokenType.minusSymbol) {
+            let nextToken = this.getNextNonWhitespaceToken(tokens, index);
+            let previousToken = this.getPreviousNonWhitespaceToken(tokens, index);
+            if (
+                //next non-whitespace token is a numeric literal
+                nextToken && nextToken.tokenType === TokenType.numberLiteral &&
+                previousToken && BrightScriptFormatter.tokensBeforeNegativeNumericLiteral.indexOf(previousToken.tokenType) > -1
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the first token after the index that is NOT whitespace
+     */
+    private getNextNonWhitespaceToken(tokens: Token[], index: number) {
+        for (index = index + 1; index < tokens.length; index++) {
+            if (tokens[index] && tokens[index].tokenType !== TokenType.whitespace) {
+                return tokens[index];
+            }
+        }
+    }
+
+    /**
+     * Get the first token before the index that is NOT whitespace
+     */
+    private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number) {
+        for (let i = startIndex - 1; i > -1; i--) {
+            if (tokens[i] && tokens[i].tokenType !== TokenType.whitespace) {
+                return tokens[i];
+            }
+        }
+    }
+
+    /**
+     * Determine if the current tokens match the target tokens
+     */
+    private isMatch(allTokens: Token[], allTokensIndex: number, matchTokenTypes: TokenType[]) {
+        if (matchTokenTypes.length === 0) {
+            return false;
+        }
+        for (let i = 0; i < matchTokenTypes.length; i++) {
+            if (allTokens[allTokensIndex + i].tokenType !== matchTokenTypes[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Remove all trailing whitespace
      */
     private formatTrailingWhiteSpace(
@@ -301,18 +478,22 @@ export class BrightScriptFormatter {
             let potentialWhitespaceTokenIndex = lineTokens.length - 2;
 
             let whitespaceTokenCandidate = lineTokens[potentialWhitespaceTokenIndex];
-            //if the final token is whitespace, throw it away
-            if (whitespaceTokenCandidate.tokenType === TokenType.whitespace) {
-                lineTokens.splice(potentialWhitespaceTokenIndex, 1);
 
-                //if the final token is a comment, trim the whitespace from the righthand side
-            } else if (
-                whitespaceTokenCandidate.tokenType === TokenType.quoteComment ||
-                whitespaceTokenCandidate.tokenType === TokenType.remComment
-            ) {
-                whitespaceTokenCandidate.value = trimRight(
-                    whitespaceTokenCandidate.value
-                );
+            //empty lines won't have any tokens
+            if (whitespaceTokenCandidate) {
+                //if the final token is whitespace, throw it away
+                if (whitespaceTokenCandidate.tokenType === TokenType.whitespace) {
+                    lineTokens.splice(potentialWhitespaceTokenIndex, 1);
+
+                    //if the final token is a comment, trim the whitespace from the righthand side
+                } else if (
+                    whitespaceTokenCandidate.tokenType === TokenType.quoteComment ||
+                    whitespaceTokenCandidate.tokenType === TokenType.remComment
+                ) {
+                    whitespaceTokenCandidate.value = trimRight(
+                        whitespaceTokenCandidate.value
+                    );
+                }
             }
 
             //add this line to the output
@@ -372,7 +553,37 @@ export class BrightScriptFormatter {
             keywordCase: 'lower',
             compositeKeywords: 'split',
             removeTrailingWhiteSpace: true,
-            keywordCaseOverride: {}
+            formatInteriorWhitespace: true,
+            keywordCaseOverride: {},
+            spacingTokensBoth: [
+                //assignments
+                TokenType.equalSymbol,
+                TokenType.additionAssignmentSymbol,
+                TokenType.subtractionAssignmentSymbol,
+                TokenType.multiplicationAssignmentSymbol,
+                TokenType.divisionAssignmentSymbol,
+                TokenType.integerDivisionAssignmentSymbol,
+                TokenType.lessThanLessThanEqualSymbol,
+                TokenType.greaterThanGreaterThanEqualSymbol,
+
+                //operators
+                TokenType.plusSymbol,
+                TokenType.minusSymbol,
+                TokenType.asteriskSymbol,
+                TokenType.forwardSlashSymbol,
+                TokenType.backSlashSymbol,
+                TokenType.carotSymbol,
+                TokenType.notEqual,
+                TokenType.lessThanOrEqual,
+                TokenType.greaterThanOrEqual,
+                TokenType.greaterThanSymbol,
+                TokenType.lessThanSymbol,
+            ],
+            spacingTokensLeft: [],
+            spacingTokensRight: [
+                TokenType.commaSymbol,
+                TokenType.colonSymbol
+            ]
         };
         if (options) {
             for (let attrname in options) {
@@ -451,7 +662,28 @@ export interface FormattingOptions {
      */
     removeTrailingWhiteSpace?: boolean;
     /**
+     * If true (the default), all whitespace between items is reduced to exactly 1 space character,
+     * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`)
+     */
+    formatInteriorWhitespace?: boolean;
+    /**
      * Provides a way to override keyword case at the individual TokenType level
      */
     keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
+    /**
+     * An array of tokens that should have a space to its left and its right.
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    spacingTokensBoth?: (TokenType)[];
+    /**
+     * An array of tokens that should have a space to its left.
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    spacingTokensLeft?: (TokenType)[];
+    /**
+     * An array of tokens that should have a space to its right.
+     * Provide an inner array for multi-tokens that must be found together ()
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    spacingTokensRight?: (TokenType)[];
 }

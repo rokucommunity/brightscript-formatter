@@ -10,6 +10,66 @@ describe('BrightScriptFormatter', () => {
         formatter = new BrightScriptFormatter();
     });
 
+    describe('formatInteriorWhitespace', () => {
+        it('dedupes extra spaces', () => {
+            expect(formatter.format(`
+                sub  add(name   as   string)
+                    name   =   name   +   "bob"
+                end sub`,
+                { formatIndent: false }
+            )).to.equal(`
+                sub add(name as string)
+                    name = name + "bob"
+                end sub`
+            );
+        });
+        it('adds spaces between many known token types', () => {
+            expect(formatter.format(`name=name+""`)).to.equal(`name = name + ""`);
+            expect(formatter.format(`age+=1`)).to.equal(`age += 1`);
+            expect(formatter.format(`age-=1`)).to.equal(`age -= 1`);
+            expect(formatter.format(`age*=1`)).to.equal(`age *= 1`);
+            expect(formatter.format(`age/=1`)).to.equal(`age /= 1`);
+            expect(formatter.format(`age\\=1`)).to.equal(`age \\= 1`);
+            expect(formatter.format(`age>>=1`)).to.equal(`age >>= 1`);
+            expect(formatter.format(`age<<=1`)).to.equal(`age <<= 1`);
+            expect(formatter.format(`age=1+1`)).to.equal(`age = 1 + 1`);
+            expect(formatter.format(`age=1-1`)).to.equal(`age = 1 - 1`);
+            expect(formatter.format(`age=1*1`)).to.equal(`age = 1 * 1`);
+            expect(formatter.format(`age=1/1`)).to.equal(`age = 1 / 1`);
+            expect(formatter.format(`age=1\\1`)).to.equal(`age = 1 \\ 1`);
+            expect(formatter.format(`age=1^1`)).to.equal(`age = 1 ^ 1`);
+            expect(formatter.format(`age=1>1`)).to.equal(`age = 1 > 1`);
+            expect(formatter.format(`age=1<1`)).to.equal(`age = 1 < 1`);
+            expect(formatter.format(`age=1=1`)).to.equal(`age = 1 = 1`);
+            expect(formatter.format(`age=1<>1`)).to.equal(`age = 1 <> 1`);
+            expect(formatter.format(`age=1<=1`)).to.equal(`age = 1 <= 1`);
+            expect(formatter.format(`age=1>=1`)).to.equal(`age = 1 >= 1`);
+            //spacing after comma
+            expect(formatter.format(`sub main(a,b,c)\nend sub`)).to.equal(`sub main(a, b, c)\nend sub`);
+            expect(formatter.format(`name=1:age=2`)).to.equal(`name = 1: age = 2`);
+            expect(formatter.format(`x=5:print 25; " is equal to"; x^2`)).to.equal(`x = 5: print 25; " is equal to"; x ^ 2`);
+        });
+
+        it('correctly formats negative numbers compared to subtraction', () => {
+            expect(formatter.format(`name=2-1`)).to.equal(`name = 2 - 1`);
+            expect(formatter.format(`name=-1`)).to.equal(`name = -1`);
+            expect(formatter.format(`name=1+-1`)).to.equal(`name = 1 + -1`);
+            expect(formatter.format(`sub main(num=-1)\nend sub`)).to.equal(`sub main(num = -1)\nend sub`);
+            //DOES remove the whitespace between them when applicable
+            expect(formatter.format(`num = - 1`)).to.equal(`num = -1`);
+
+            expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
+        });
+
+        it('ensures whitespace between numeric literal and `then` keyword', () => {
+            expect(formatter.format(`if playlist.indexOf(songEntry) = -1 then`)).to.equal(`if playlist.indexOf(songEntry) = -1 then`);
+        });
+
+        it('does not add extra whitespace to end of line', () => {
+            formatEqual('name,', 'name,');
+        });
+    });
+
     describe('getCompositeKeywordParts', () => {
         it('works', () => {
             let parts;
@@ -37,29 +97,29 @@ describe('BrightScriptFormatter', () => {
 
     describe('indentStyle', () => {
         it('does not change correctly formatted programs', () => {
-            let program = `sub add(a,b)\n    return a+b\nend sub`;
+            let program = `sub add(a, b)\n    return a + b\nend sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
         it('skips indentation when formatIndent === false', () => {
-            let program = `    sub add(a,b)\nreturn a+b\n    end sub`;
+            let program = `    sub add(a, b)\nreturn a + b\n    end sub`;
             expect(formatter.format(program, { formatIndent: false })).to.equal(program);
         });
 
-        it('formats sing tabs', () => {
-            let program = `sub add(a,b)\n\treturn a+b\nend sub`;
+        it('formats single tabs', () => {
+            let program = `sub add(a, b)\n\treturn a + b\nend sub`;
             expect(formatter.format(program, { indentStyle: 'tabs' })).to.equal(program);
         });
 
         it('formats improperly formatted programs', () => {
-            expect(formatter.format(`sub add()\nreturn a+b\nend sub`)).to.equal(`sub add()\n    return a+b\nend sub`);
-            expect(formatter.format(`    sub add()\n        return a+b\n    end sub`)).to.equal(`sub add()\n    return a+b\nend sub`);
+            expect(formatter.format(`sub add()\nreturn a+b\nend sub`)).to.equal(`sub add()\n    return a + b\nend sub`);
+            expect(formatter.format(`    sub add()\n        return a+b\n    end sub`)).to.equal(`sub add()\n    return a + b\nend sub`);
         });
 
         it('handles intermediate elseif', () => {
             expect(formatter.format(
                 `sub add()\nif true then\na=1\nelse if true then\na=1\nend if\nend sub`)).to.equal(
-                    `sub add()\n    if true then\n        a=1\n    else if true then\n        a=1\n    end if\nend sub`
+                    `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`
                 );
         });
 
@@ -176,7 +236,7 @@ describe('BrightScriptFormatter', () => {
                     compositeKeywords: null
                 }
             )).to.equal(
-                `SUB add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nENDSUB`,
+                `SUB add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nENDSUB`,
             );
         });
         it('forces keywords to lower case', () => {
@@ -187,7 +247,7 @@ describe('BrightScriptFormatter', () => {
                     compositeKeywords: null
                 }
             )).to.equal(
-                `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
+                `sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nendsub`,
             );
         });
 
@@ -199,7 +259,7 @@ describe('BrightScriptFormatter', () => {
                     compositeKeywords: null
                 }
             )).to.equal(
-                `Sub add()\n    If true Then\n        a=1\n    ElseIf true Then\n        a=1\n    End If\nEndSub`,
+                `Sub add()\n    If true Then\n        a = 1\n    ElseIf true Then\n        a = 1\n    End If\nEndSub`,
             );
         });
 
@@ -211,7 +271,7 @@ describe('BrightScriptFormatter', () => {
                     compositeKeywords: null
                 }
             )).to.equal(
-                `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    endif\nENDSUB`,
+                `sub add()\n    IF true then\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    endif\nENDSUB`,
             );
         });
 
@@ -230,7 +290,7 @@ describe('BrightScriptFormatter', () => {
                     }
                 }
             )).to.equal(
-                `sub add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nendsub`,
+                `sub add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nendsub`,
             );
         });
         it('overrides default casing and uses upper case', () => {
@@ -245,7 +305,7 @@ describe('BrightScriptFormatter', () => {
                     }
                 }
             )).to.equal(
-                `SUB add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nENDSUB`,
+                `SUB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nENDSUB`,
             );
         });
 
@@ -261,7 +321,7 @@ describe('BrightScriptFormatter', () => {
                     }
                 }
             )).to.equal(
-                `Sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    end if\nEndSub`,
+                `Sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    end if\nEndSub`,
             );
         });
 
@@ -277,7 +337,7 @@ describe('BrightScriptFormatter', () => {
                     }
                 }
             )).to.equal(
-                `SuB add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nEnDSuB`,
+                `SuB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nEnDSuB`,
             );
         });
 
@@ -315,10 +375,10 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(`'comment\t `)).to.equal(`'comment`);
         });
         it('handles multi-line prorgams', () => {
-            expect(formatter.format(`name = "bob"\t \nage=22 `)).to.equal(`name = "bob"\nage=22`);
+            expect(formatter.format(`name = "bob"\t \nage=22 `)).to.equal(`name = "bob"\nage = 22`);
         });
         it('leaves normal programs alone', () => {
-            expect(formatter.format(`name = "bob"\nage=22 `)).to.equal(`name = "bob"\nage=22`);
+            expect(formatter.format(`name = "bob"\nage=22 `)).to.equal(`name = "bob"\nage = 22`);
         });
         it('skips formatting when the option is set to false', () => {
             expect(formatter.format(`name = "bob" `, { removeTrailingWhiteSpace: false })).to.equal(`name = "bob" `);
@@ -353,7 +413,7 @@ describe('BrightScriptFormatter', () => {
                     compositeKeywords: 'split'
                 }
             )).to.equal(
-                `sub add()\n    if true then\n        a=1\n    else if true then\n        a=1\n    end if\nend sub`,
+                `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`,
             );
         });
 
@@ -382,7 +442,7 @@ describe('BrightScriptFormatter', () => {
 
         it('handles multi-line arrays', () => {
             let program = `function DoSomething()\ndata=[\n1,\n2\n]\nend function`;
-            expect(formatter.format(program)).to.equal(`function DoSomething()\n    data=[\n        1,\n        2\n    ]\nend function`);
+            expect(formatter.format(program)).to.equal(`function DoSomething()\n    data = [\n        1,\n        2\n    ]\nend function`);
         });
     });
 
@@ -413,4 +473,8 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(program)).to.equal(program);
         });
     });
+
+    function formatEqual(incoming: string, expected: string) {
+        expect(formatter.format(incoming)).to.equal(expected);
+    }
 });

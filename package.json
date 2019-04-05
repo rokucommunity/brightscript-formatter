@@ -9,6 +9,7 @@
     "prepublishOnly": "npm run compile",
     "tslint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace --bail",
+    "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "files": [
@@ -48,7 +49,7 @@
   },
   "homepage": "https://github.com/TwitchBronBron/brightscript-formatter#readme",
   "dependencies": {
-    "brightscript-parser": "1.1.0",
+    "brightscript-parser": "1.2.0",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
