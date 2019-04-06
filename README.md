@@ -25,38 +25,4 @@ var formattedFileContents = formatter.format(unformattedFileContents, formatting
 
 ## Formatting Options
 
-```
-
-export interface FormattingOptions {
-    /**
-     * The type of indentation to use when indenting the beginning of lines.
-     */
-    indentStyle?: 'tabs' | 'spaces';
-    /**
-     * The number of spaces to use when indentStyle is 'spaces'. Default is 4
-     */
-    indentSpaceCount?: number;
-    /**
-     * If false, no line indenting will be performed, and the existing line indentations will be retained.
-     */
-    formatIndent?: boolean;
-    /**
-     * Replaces all keywords with the upper or lower case settings specified.
-     * If set to null, they are not modified at all.
-     */
-    keywordCase?: 'lower' | 'upper' | 'title' | null;
-    /**
-     * Forces all composite keywords (i.e. "elseif", "endwhile", etc...) to be consistent.
-     * If 'split', they are split into their alternatives ("else if", "end while").
-     * If 'combine', they are combined ("elseif", "endwhile").
-     * If null, they are not modified.
-     */
-    compositeKeywords?: 'split' | 'combine' | null;
-    /**
-     * If true (the default), trailing white space is removed
-     * If false, trailing white space is left intact
-     */
-    removeTrailingWhiteSpace?: boolean;
-}
-
-```
+There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface located](src/FormattingOptions.ts)

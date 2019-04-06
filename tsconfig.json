@@ -15,6 +15,9 @@
         "strict": true
     },
     "include": [
-        "src/BrightScriptFormatter.ts"
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "src/**/*.spec.ts"
     ]
 }

@@ -2,8 +2,8 @@
   "name": "brightscript-formatter",
   "version": "1.5.0",
   "description": "A formatter for Roku's BrightScript language, written in JavaScript",
-  "main": "dist/BrightScriptFormatter.js",
-  "types": "dist/BrightScriptFormatter.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "compile": "rimraf dist && tsc",
     "prepublishOnly": "npm run compile",
