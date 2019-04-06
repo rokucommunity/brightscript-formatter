@@ -68,6 +68,22 @@ describe('BrightScriptFormatter', () => {
         it('does not add extra whitespace to end of line', () => {
             formatEqual('name,', 'name,');
         });
+
+        it('removes whitespace after square brace and paren', () => {
+            formatEqual(`[ 1, 2, 3 ]`, `[1, 2, 3]`);
+            formatEqual(`[ 1,\n2,\n 3\n]`, `[1,\n    2,\n    3\n]`);
+            formatEqual(`{name: "john"}`, `{ name: "john" }`);
+            formatEqual(`doSomething( 1, 2 )`, `doSomething(1, 2)`);
+        });
+
+        it('disabling the rule works', () => {
+            expect(formatter.format(`a=1`)).to.equal('a = 1');
+            //disabled
+            expect(formatter.format(`a=1`, {
+                formatInteriorWhitespace: false
+            })).to.equal('a=1');
+
+        });
     });
 
     describe('getCompositeKeywordParts', () => {
@@ -173,7 +189,7 @@ describe('BrightScriptFormatter', () => {
 
     describe('special cases', () => {
         it('open close brace on same line', () => {
-            let program = `function http_request()\n    scope = {request: request, port: port, url: url, immediatelyFailed: true}\nend function`;
+            let program = `function http_request()\n    scope = { request: request, port: port, url: url, immediatelyFailed: true }\nend function`;
             expect(formatter.format(program)).to.equal(program);
         });
 

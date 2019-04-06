@@ -30,10 +30,6 @@ export class BrightScriptFormatter {
             tokens = this.formatCompositeKeywords(tokens, options);
         }
 
-        if (options.formatIndent) {
-            tokens = this.formatIndentation(tokens, options);
-        }
-
         if (options.keywordCase) {
             tokens = this.formatKeywordCasing(tokens, options);
         }
@@ -44,6 +40,13 @@ export class BrightScriptFormatter {
 
         if (options.formatInteriorWhitespace) {
             tokens = this.formatInteriorWhitespace(tokens, options);
+        }
+
+        //dedupe side-by-side whitespace tokens
+        this.dedupeWhitespace(tokens);
+
+        if (options.formatIndent) {
+            tokens = this.formatIndentation(tokens, options);
         }
 
         //join all tokens back together into a single string
@@ -72,6 +75,19 @@ export class BrightScriptFormatter {
             }
         }
         return tokens;
+    }
+
+    private dedupeWhitespace(tokens: Token[]) {
+        for (let i = 0; i < tokens.length; i++) {
+            let currentToken = tokens[i];
+            let nextToken = tokens[i + 1] ? tokens[i + 1] : { tokenType: undefined, value: '' };
+            if (currentToken.tokenType === TokenType.whitespace && nextToken.tokenType === TokenType.whitespace) {
+                currentToken.value += nextToken.value;
+                tokens.splice(i + 1, 1);
+                //decrement the counter so we process this token again so it can absorb more whitespace tokens
+                i--;
+            }
+        }
     }
 
     private formatCompositeKeywords(tokens: Token[], options: FormattingOptions) {
@@ -291,18 +307,28 @@ export class BrightScriptFormatter {
         tokens: Token[],
         options: FormattingOptions
     ) {
-        let leftPadTokenTypes = [
-            ...(options.spacingTokensBoth ? options.spacingTokensBoth : []),
-            ...(options.spacingTokensLeft ? options.spacingTokensLeft : [])
+        let addSpaceLeftTokenTypes = [
+            ...(options.addSpacingTokensBoth ? options.addSpacingTokensBoth : []),
+            ...(options.addSpacingTokensLeft ? options.addSpacingTokensLeft : [])
         ];
-        let rightPadTokenTypes = [
-            ...(options.spacingTokensBoth ? options.spacingTokensBoth : []),
-            ...(options.spacingTokensRight ? options.spacingTokensRight : []),
+        let addSpaceRightTokenTypes = [
+            ...(options.addSpacingTokensBoth ? options.addSpacingTokensBoth : []),
+            ...(options.addSpacingTokensRight ? options.addSpacingTokensRight : []),
         ];
+        let removeSpaceLeftTokenTypes = [
+            ...(options.removeSpacingTokensBoth ? options.removeSpacingTokensBoth : []),
+            ...(options.removeSpacingTokensLeft ? options.removeSpacingTokensLeft : [])
+        ];
+        let removeSpaceRightTokenTypes = [
+            ...(options.removeSpacingTokensBoth ? options.removeSpacingTokensBoth : []),
+            ...(options.removeSpacingTokensRight ? options.removeSpacingTokensRight : [])
+        ];
+
         let isPastFirstTokenOfLine = false;
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
             let nextTokenType: TokenType = <any>(tokens[i + 1] ? tokens[i + 1].tokenType : undefined);
+            let previousTokenType: TokenType = <any>(tokens[i - 1] ? tokens[i - 1].tokenType : undefined);
 
             //reset token indicator on newline
             if (token.tokenType === TokenType.newline) {
@@ -320,7 +346,7 @@ export class BrightScriptFormatter {
             }
 
             //pad any of these token types with a space to the right
-            if (rightPadTokenTypes.indexOf(token.tokenType) > -1) {
+            if (addSpaceRightTokenTypes.indexOf(token.tokenType) > -1) {
                 //special case: we want the negative sign to be directly beside a numeric, in certain cases.
                 //we can't handle every case, but we can get close
                 if (this.looksLikeNegativeNumericLiteral(tokens, i)) {
@@ -341,19 +367,34 @@ export class BrightScriptFormatter {
             }
 
             //pad any of these tokens with a space to the left
-            for (let leftPadTokenType of leftPadTokenTypes) {
-                if (this.isMatch(tokens, i, [leftPadTokenType])) {
-                    //ensure a space token to the left
-                    if (i > 0 && tokens[i - 1].tokenType !== TokenType.whitespace) {
-                        tokens.splice(i, 0, {
-                            startIndex: -1,
-                            tokenType: TokenType.whitespace,
-                            value: ' '
-                        });
-                        //increment i by 1 since we added a token
-                        i++;
-                        continue;
-                    }
+            if (addSpaceLeftTokenTypes.indexOf(token.tokenType) > -1) {
+                //ensure a space token to the left
+                if (previousTokenType && previousTokenType !== TokenType.whitespace) {
+                    tokens.splice(i, 0, {
+                        startIndex: -1,
+                        tokenType: TokenType.whitespace,
+                        value: ' '
+                    });
+                    //increment i by 1 since we added a token
+                    i++;
+                }
+            }
+
+            //remove any space tokens on the right
+            if (removeSpaceRightTokenTypes.indexOf(token.tokenType) > -1) {
+                if (nextTokenType === TokenType.whitespace) {
+                    //remove the next token, which is the whitespace token
+                    tokens.splice(i + 1, 1);
+                }
+            }
+
+            //remove any space tokens on the left
+            if (removeSpaceLeftTokenTypes.indexOf(token.tokenType) > -1) {
+                if (previousTokenType === TokenType.whitespace) {
+                    //remove the previous token, which is the whitespace token
+                    tokens.splice(i - 1, 1);
+                    //backtrack the index since we just shifted the array
+                    i--;
                 }
             }
         }
@@ -555,7 +596,7 @@ export class BrightScriptFormatter {
             removeTrailingWhiteSpace: true,
             formatInteriorWhitespace: true,
             keywordCaseOverride: {},
-            spacingTokensBoth: [
+            addSpacingTokensBoth: [
                 //assignments
                 TokenType.equalSymbol,
                 TokenType.additionAssignmentSymbol,
@@ -579,10 +620,22 @@ export class BrightScriptFormatter {
                 TokenType.greaterThanSymbol,
                 TokenType.lessThanSymbol,
             ],
-            spacingTokensLeft: [],
-            spacingTokensRight: [
+            addSpacingTokensLeft: [
+                TokenType.closeCurlyBraceSymbol
+            ],
+            addSpacingTokensRight: [
+                TokenType.openCurlyBraceSymbol,
                 TokenType.commaSymbol,
                 TokenType.colonSymbol
+            ],
+            removeSpacingTokensBoth: [],
+            removeSpacingTokensLeft: [
+                TokenType.closeSquareBraceSymbol,
+                TokenType.closeParenSymbol
+            ],
+            removeSpacingTokensRight: [
+                TokenType.openSquareBraceSymbol,
+                TokenType.openParenSymbol
             ]
         };
         if (options) {
@@ -670,20 +723,37 @@ export interface FormattingOptions {
      * Provides a way to override keyword case at the individual TokenType level
      */
     keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
+
     /**
      * An array of tokens that should have a space to its left and its right.
      * Depends on `formatInteriorWhitespace` being true
      */
-    spacingTokensBoth?: (TokenType)[];
+    addSpacingTokensBoth?: (TokenType)[];
     /**
      * An array of tokens that should have a space to its left.
      * Depends on `formatInteriorWhitespace` being true
      */
-    spacingTokensLeft?: (TokenType)[];
+    addSpacingTokensLeft?: (TokenType)[];
     /**
      * An array of tokens that should have a space to its right.
      * Provide an inner array for multi-tokens that must be found together ()
      * Depends on `formatInteriorWhitespace` being true
      */
-    spacingTokensRight?: (TokenType)[];
+    addSpacingTokensRight?: (TokenType)[];
+
+    /**
+     * An array of tokens that should not have any space to its left or its right.
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    removeSpacingTokensBoth?: (TokenType)[];
+    /**
+     * An array of tokens that should not have any space to its left.
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    removeSpacingTokensLeft?: (TokenType)[];
+    /**
+     * An array of tokens that should not have any space to its right.
+     * Depends on `formatInteriorWhitespace` being true
+     */
+    removeSpacingTokensRight?: (TokenType)[];
 }
