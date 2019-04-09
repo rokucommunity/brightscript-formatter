@@ -309,21 +309,50 @@ export class BrightScriptFormatter {
         tokens: Token[],
         options: FormattingOptions
     ) {
-        let addSpaceLeftTokenTypes = [
-            ...(options.addSpacingTokensBoth ? options.addSpacingTokensBoth : []),
-            ...(options.addSpacingTokensLeft ? options.addSpacingTokensLeft : [])
+        let addBoth = [
+            //assignments
+            TokenType.equalSymbol,
+            TokenType.additionAssignmentSymbol,
+            TokenType.subtractionAssignmentSymbol,
+            TokenType.multiplicationAssignmentSymbol,
+            TokenType.divisionAssignmentSymbol,
+            TokenType.integerDivisionAssignmentSymbol,
+            TokenType.lessThanLessThanEqualSymbol,
+            TokenType.greaterThanGreaterThanEqualSymbol,
+
+            //operators
+            TokenType.plusSymbol,
+            TokenType.minusSymbol,
+            TokenType.asteriskSymbol,
+            TokenType.forwardSlashSymbol,
+            TokenType.backSlashSymbol,
+            TokenType.carotSymbol,
+            TokenType.notEqual,
+            TokenType.lessThanOrEqual,
+            TokenType.greaterThanOrEqual,
+            TokenType.greaterThanSymbol,
+            TokenType.lessThanSymbol,
         ];
-        let addSpaceRightTokenTypes = [
-            ...(options.addSpacingTokensBoth ? options.addSpacingTokensBoth : []),
-            ...(options.addSpacingTokensRight ? options.addSpacingTokensRight : []),
+        let addLeft = [
+            ...addBoth,
+            TokenType.closeCurlyBraceSymbol
         ];
-        let removeSpaceLeftTokenTypes = [
-            ...(options.removeSpacingTokensBoth ? options.removeSpacingTokensBoth : []),
-            ...(options.removeSpacingTokensLeft ? options.removeSpacingTokensLeft : [])
+        let addRight = [
+            ...addBoth,
+            TokenType.openCurlyBraceSymbol,
+            TokenType.commaSymbol,
+            TokenType.colonSymbol
         ];
-        let removeSpaceRightTokenTypes = [
-            ...(options.removeSpacingTokensBoth ? options.removeSpacingTokensBoth : []),
-            ...(options.removeSpacingTokensRight ? options.removeSpacingTokensRight : [])
+        let removeBoth = [];
+        let removeLeft = [
+            ...removeBoth,
+            TokenType.closeSquareBraceSymbol,
+            TokenType.closeParenSymbol
+        ];
+        let removeRight = [
+            ...removeBoth,
+            TokenType.openSquareBraceSymbol,
+            TokenType.openParenSymbol
         ];
 
         let isPastFirstTokenOfLine = false;
@@ -348,7 +377,7 @@ export class BrightScriptFormatter {
             }
 
             //pad any of these token types with a space to the right
-            if (addSpaceRightTokenTypes.indexOf(token.tokenType) > -1) {
+            if (addRight.indexOf(token.tokenType) > -1) {
                 //special case: we want the negative sign to be directly beside a numeric, in certain cases.
                 //we can't handle every case, but we can get close
                 if (this.looksLikeNegativeNumericLiteral(tokens, i)) {
@@ -369,7 +398,7 @@ export class BrightScriptFormatter {
             }
 
             //pad any of these tokens with a space to the left
-            if (addSpaceLeftTokenTypes.indexOf(token.tokenType) > -1) {
+            if (addLeft.indexOf(token.tokenType) > -1) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenType.whitespace) {
                     tokens.splice(i, 0, {
@@ -383,7 +412,7 @@ export class BrightScriptFormatter {
             }
 
             //remove any space tokens on the right
-            if (removeSpaceRightTokenTypes.indexOf(token.tokenType) > -1) {
+            if (removeRight.indexOf(token.tokenType) > -1) {
                 if (nextTokenType === TokenType.whitespace) {
                     //remove the next token, which is the whitespace token
                     tokens.splice(i + 1, 1);
@@ -391,7 +420,7 @@ export class BrightScriptFormatter {
             }
 
             //remove any space tokens on the left
-            if (removeSpaceLeftTokenTypes.indexOf(token.tokenType) > -1) {
+            if (removeLeft.indexOf(token.tokenType) > -1) {
                 if (previousTokenType === TokenType.whitespace) {
                     //remove the previous token, which is the whitespace token
                     tokens.splice(i - 1, 1);
@@ -597,48 +626,7 @@ export class BrightScriptFormatter {
             compositeKeywords: 'split',
             removeTrailingWhiteSpace: true,
             formatInteriorWhitespace: true,
-            keywordCaseOverride: {},
-            addSpacingTokensBoth: [
-                //assignments
-                TokenType.equalSymbol,
-                TokenType.additionAssignmentSymbol,
-                TokenType.subtractionAssignmentSymbol,
-                TokenType.multiplicationAssignmentSymbol,
-                TokenType.divisionAssignmentSymbol,
-                TokenType.integerDivisionAssignmentSymbol,
-                TokenType.lessThanLessThanEqualSymbol,
-                TokenType.greaterThanGreaterThanEqualSymbol,
-
-                //operators
-                TokenType.plusSymbol,
-                TokenType.minusSymbol,
-                TokenType.asteriskSymbol,
-                TokenType.forwardSlashSymbol,
-                TokenType.backSlashSymbol,
-                TokenType.carotSymbol,
-                TokenType.notEqual,
-                TokenType.lessThanOrEqual,
-                TokenType.greaterThanOrEqual,
-                TokenType.greaterThanSymbol,
-                TokenType.lessThanSymbol,
-            ],
-            addSpacingTokensLeft: [
-                TokenType.closeCurlyBraceSymbol
-            ],
-            addSpacingTokensRight: [
-                TokenType.openCurlyBraceSymbol,
-                TokenType.commaSymbol,
-                TokenType.colonSymbol
-            ],
-            removeSpacingTokensBoth: [],
-            removeSpacingTokensLeft: [
-                TokenType.closeSquareBraceSymbol,
-                TokenType.closeParenSymbol
-            ],
-            removeSpacingTokensRight: [
-                TokenType.openSquareBraceSymbol,
-                TokenType.openParenSymbol
-            ]
+            keywordCaseOverride: {}
         };
         if (options) {
             for (let attrname in options) {

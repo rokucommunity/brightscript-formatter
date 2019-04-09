@@ -44,37 +44,4 @@ export interface FormattingOptions {
      * Provides a way to override keyword case at the individual TokenType level
      */
     keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
-
-    /**
-     * An array of tokens that should have a space to its left and its right.
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    addSpacingTokensBoth?: (TokenType)[];
-    /**
-     * An array of tokens that should have a space to its left.
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    addSpacingTokensLeft?: (TokenType)[];
-    /**
-     * An array of tokens that should have a space to its right.
-     * Provide an inner array for multi-tokens that must be found together ()
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    addSpacingTokensRight?: (TokenType)[];
-
-    /**
-     * An array of tokens that should not have any space to its left or its right.
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    removeSpacingTokensBoth?: (TokenType)[];
-    /**
-     * An array of tokens that should not have any space to its left.
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    removeSpacingTokensLeft?: (TokenType)[];
-    /**
-     * An array of tokens that should not have any space to its right.
-     * Depends on `formatInteriorWhitespace` being true
-     */
-    removeSpacingTokensRight?: (TokenType)[];
 }

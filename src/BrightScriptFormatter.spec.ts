@@ -76,13 +76,19 @@ describe('BrightScriptFormatter', () => {
             formatEqual(`doSomething( 1, 2 )`, `doSomething(1, 2)`);
         });
 
+        it('formats exactly 1 space between logical operators', () => {
+            formatEqual(
+                `if(true  or  false  and  1=1  and  2>1)`,
+                `if(true or false and 1 = 1 and 2 > 1)`
+            );
+        });
+
         it('disabling the rule works', () => {
             expect(formatter.format(`a=1`)).to.equal('a = 1');
             //disabled
             expect(formatter.format(`a=1`, {
                 formatInteriorWhitespace: false
             })).to.equal('a=1');
-
         });
     });
 
