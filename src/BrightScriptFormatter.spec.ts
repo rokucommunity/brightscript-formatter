@@ -2,6 +2,7 @@ import { BrightScriptLexer, TokenType } from 'brightscript-parser';
 import { expect } from 'chai';
 
 import { BrightScriptFormatter } from './BrightScriptFormatter';
+import { FormattingOptions } from './FormattingOptions';
 
 describe('BrightScriptFormatter', () => {
     let formatter: BrightScriptFormatter;
@@ -81,6 +82,55 @@ describe('BrightScriptFormatter', () => {
                 `if(true  or  false  and  1=1  and  2>1)`,
                 `if(true or false and 1 = 1 and 2 > 1)`
             );
+        });
+        function cat() {
+
+        }
+
+        it('removes space between function name and opening curly brace', () => {
+            formatEqual(`function main ()\nend function`, `function main()\nend function`);
+        });
+
+        it('adds space between function name and opening curly brace', () => {
+            formatEqual(`function main ()\nend function`, `function main ()\nend function`, {
+                insertSpaceBeforeFunctionParenthesis: true
+            });
+            formatEqual(`function main()\nend function`, `function main ()\nend function`, {
+                insertSpaceBeforeFunctionParenthesis: true
+            });
+        });
+
+        it('removes space between anon function keyword and opening curly brace', () => {
+            formatEqual(`func = function()\nend function`, `func = function()\nend function`);
+            formatEqual(`func = function()\nend function`, `func = function()\nend function`);
+        });
+
+        it('adds space between anon function keyword and opening curly brace', () => {
+            formatEqual(`func = function ()\nend function`, `func = function ()\nend function`, {
+                insertSpaceBeforeFunctionParenthesis: true
+            });
+            formatEqual(`func = function()\nend function`, `func = function ()\nend function`, {
+                insertSpaceBeforeFunctionParenthesis: true
+            });
+        });
+
+        it('removes space between empty curly braces', () => {
+            formatEqual(`person = {}`, `person = {}`);
+            formatEqual(`person = {}`, `person = {}`);
+        });
+
+        it('adds space between empty curly braces', () => {
+            formatEqual(`person = { }`, `person = { }`, {
+                insertSpaceBetweenEmptyCurlyBraces: true
+            });
+            formatEqual(`person = {}`, `person = { }`, {
+                insertSpaceBetweenEmptyCurlyBraces: true
+            });
+        });
+
+        it('removes space between empty parens', () => {
+            formatEqual(`main( )`, `main()`);
+            formatEqual(`main()`, `main()`);
         });
 
         it('disabling the rule works', () => {
@@ -496,7 +546,7 @@ describe('BrightScriptFormatter', () => {
         });
     });
 
-    function formatEqual(incoming: string, expected: string) {
-        expect(formatter.format(incoming)).to.equal(expected);
+    function formatEqual(incoming: string, expected: string, options?: FormattingOptions) {
+        expect(formatter.format(incoming, options)).to.equal(expected);
     }
 });

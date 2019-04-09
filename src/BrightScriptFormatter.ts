@@ -429,7 +429,80 @@ export class BrightScriptFormatter {
                 }
             }
         }
+
+        //handle special cases
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+
+            //space to left of function parens?
+            {
+                let parenToken: Token | undefined;
+                //look for anonymous functions
+                if (token.tokenType === TokenType.function && nextNonWhitespaceToken.tokenType === TokenType.openParenSymbol) {
+                    parenToken = nextNonWhitespaceToken;
+
+                    //look for named functions
+                } else if (token.tokenType === TokenType.function && nextNonWhitespaceToken.tokenType === TokenType.identifier) {
+                    //get the next non-whitespace token, which SHOULD be the paren
+                    let parenCandidate = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(nextNonWhitespaceToken));
+                    if (parenCandidate.tokenType === TokenType.openParenSymbol) {
+                        parenToken = parenCandidate;
+                    }
+                }
+                //if we found the paren token, handle spacing
+                if (parenToken) {
+                    //walk backwards, removing any whitespace tokens found
+                    this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(parenToken));
+                    if (options.insertSpaceBeforeFunctionParenthesis) {
+                        //insert a whitespace token
+                        tokens.splice(tokens.indexOf(parenToken), 0, {
+                            tokenType: TokenType.whitespace,
+                            value: ' ',
+                            startIndex: -1
+                        });
+                    }
+                    //next loop iteration should be after the open paren
+                    i = tokens.indexOf(parenToken);
+                }
+            }
+
+            //empty curly braces
+            if (token.tokenType === TokenType.openCurlyBraceSymbol && nextNonWhitespaceToken.tokenType === TokenType.closeCurlyBraceSymbol) {
+                this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
+                if (options.insertSpaceBetweenEmptyCurlyBraces) {
+                    tokens.splice(tokens.indexOf(nextNonWhitespaceToken), 0, {
+                        tokenType: TokenType.whitespace,
+                        startIndex: -1,
+                        value: ' '
+                    });
+                    //next loop iteration should be after the closing curly brace
+                    i = tokens.indexOf(nextNonWhitespaceToken);
+                }
+            }
+
+            //empty parenthesis (user doesn't have this option, we will always do this one)
+            if (token.tokenType === TokenType.openParenSymbol && nextNonWhitespaceToken.tokenType === TokenType.closeParenSymbol) {
+                this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
+                //next loop iteration should be after the closing paren
+                i = tokens.indexOf(nextNonWhitespaceToken);
+            }
+
+        }
         return tokens;
+    }
+
+    /**
+     * Remove whitespace tokens backwards until a non-whitespace token is encountered
+     * @param startIndex the index of the non-whitespace token to start with. This function will start iterating at `startIndex - 1`
+     */
+    private removeWhitespaceTokensBackwards(tokens: Token[], startIndex: number) {
+        let removeCount = 0;
+        let i = startIndex - 1;
+        while (tokens[i--].tokenType === TokenType.whitespace) {
+            removeCount++;
+        }
+        tokens.splice(startIndex - removeCount, removeCount);
     }
 
     /**
@@ -501,6 +574,8 @@ export class BrightScriptFormatter {
                 return tokens[index];
             }
         }
+        //if we got here, we ran out of tokens. Return the EOF token
+        return tokens[tokens.length - 1];
     }
 
     /**
@@ -625,8 +700,10 @@ export class BrightScriptFormatter {
             keywordCase: 'lower',
             compositeKeywords: 'split',
             removeTrailingWhiteSpace: true,
+            keywordCaseOverride: {},
             formatInteriorWhitespace: true,
-            keywordCaseOverride: {}
+            insertSpaceBeforeFunctionParenthesis: false,
+            insertSpaceBetweenEmptyCurlyBraces: false
         };
         if (options) {
             for (let attrname in options) {
