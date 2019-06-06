@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "compile": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc",
     "prepublishOnly": "npm run compile",
-    "tslint": "tslint --project ./tsconfig.json",
+    "lint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace",
     "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
