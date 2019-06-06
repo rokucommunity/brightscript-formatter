@@ -10,7 +10,8 @@
     "tslint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace",
     "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "format-github": "ts-node test-format.ts"
   },
   "files": [
     "dist/**/*"
@@ -49,7 +50,11 @@
   },
   "homepage": "https://github.com/TwitchBronBron/brightscript-formatter#readme",
   "dependencies": {
+    "@types/fs-extra": "^7.0.0",
     "brightscript-parser": "1.2.0",
+    "child-process-promise": "^2.2.1",
+    "fs-extra": "^8.0.1",
+    "glob-promise": "^3.4.0",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
@@ -61,7 +66,7 @@
     "nyc": "^13.1.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.3",
-    "ts-node": "^8.0.2",
+    "ts-node": "^8.2.0",
     "tslint": "^5.14.0",
     "tslint-eslint-rules": "^5.4.0",
     "tslint-origin-ordered-imports-rule": "^1.1.2",
