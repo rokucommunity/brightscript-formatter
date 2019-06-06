@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build && npm run test && npm run lint",
     "lint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace",
     "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
