@@ -11,7 +11,33 @@ describe('BrightScriptFormatter', () => {
         formatter = new BrightScriptFormatter();
     });
 
+    describe('dedupeWhitespace', () => {
+        it('dedupes whitespace', () => {
+            const tokens = [{
+                tokenType: TokenType.whitespace,
+                value: ' ',
+                startIndex: 0
+            }, {
+                tokenType: TokenType.whitespace,
+                value: ' ',
+                startIndex: 1
+            }, {
+                tokenType: TokenType.whitespace,
+                value: ' ',
+                startIndex: 2
+            }];
+            (formatter as any).dedupeWhitespace(tokens);
+            expect(tokens).to.be.lengthOf(1);
+        });
+    });
+
     describe('formatInteriorWhitespace', () => {
+        it('handles malformed function whitespace', () => {
+            expect(formatter.format(`function add`,
+                { formatIndent: false }
+            )).to.equal(`function add`);
+        });
+
         it('dedupes extra spaces', () => {
             expect(formatter.format(`
                 sub  add(name   as   string)
@@ -24,6 +50,7 @@ describe('BrightScriptFormatter', () => {
                 end sub`
             );
         });
+
         it('adds spaces between many known token types', () => {
             expect(formatter.format(`name=name+""`)).to.equal(`name = name + ""`);
             expect(formatter.format(`age+=1`)).to.equal(`age += 1`);
@@ -83,9 +110,6 @@ describe('BrightScriptFormatter', () => {
                 `if(true or false and 1 = 1 and 2 > 1)`
             );
         });
-        function cat() {
-
-        }
 
         it('removes space between function name and opening curly brace', () => {
             formatEqual(`function main ()\nend function`, `function main()\nend function`);

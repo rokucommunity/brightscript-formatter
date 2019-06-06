@@ -590,21 +590,6 @@ export class BrightScriptFormatter {
     }
 
     /**
-     * Determine if the current tokens match the target tokens
-     */
-    private isMatch(allTokens: Token[], allTokensIndex: number, matchTokenTypes: TokenType[]) {
-        if (matchTokenTypes.length === 0) {
-            return false;
-        }
-        for (let i = 0; i < matchTokenTypes.length; i++) {
-            if (allTokens[allTokensIndex + i].tokenType !== matchTokenTypes[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Remove all trailing whitespace
      */
     private formatTrailingWhiteSpace(
