@@ -9,7 +9,7 @@
                 "isDefault": true
             },
             "type": "npm",
-            "script": "compile",
+            "script": "build",
             "problemMatcher": []
         },
         {
