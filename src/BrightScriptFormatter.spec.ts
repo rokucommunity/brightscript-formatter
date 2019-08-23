@@ -240,6 +240,22 @@ describe('BrightScriptFormatter', () => {
                 `sub main()\n    'comment1\n    'comment2\nend sub`
             );
         });
+
+        it('does not double-indent for function keyword used as type', () => {
+            expect(formatter.format(
+                `function work(callback as function) as function\n'comment\nend function`)
+            ).to.equal(
+                `function work(callback as function) as function\n    'comment\nend function`
+            );
+        });
+
+        it('does not double-indent for sub keyword used as type', () => {
+            expect(formatter.format(
+                `sub work(callback as sub) as sub\n'comment\nend sub`)
+            ).to.equal(
+                `sub work(callback as sub) as sub\n    'comment\nend sub`
+            );
+        });
     });
 
     describe('indentSpaceCount', () => {

@@ -235,9 +235,20 @@ export class BrightScriptFormatter {
                 //     //do nothing with single-line if statement indentation
                 // }
             } else {
-                for (let token of lineTokens) {
+                inner: for (let i = 0; i < lineTokens.length; i++) {
+                    let token = lineTokens[i];
+                    let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
+
                     //if this is an indentor token,
                     if (indentTokens.indexOf(token.tokenType) > -1) {
+                        //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
+                        if (
+                            (token.tokenType === TokenType.function || token.tokenType === TokenType.sub) &&
+                            //the previous token will be whitespace, so verify that previousPrevious is 'as'
+                            previousNonWhitespaceToken && previousNonWhitespaceToken.value.toLowerCase() === 'as'
+                        ) {
+                            continue inner;
+                        }
                         tabCount++;
                         foundIndentorThisLine = true;
 
