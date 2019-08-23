@@ -102,9 +102,11 @@ export class BrightScriptFormatter {
                 let tokenValue = token.value;
                 if (options.compositeKeywords === 'combine') {
                     token.value = parts[0] + parts[1];
-                } else {
+                } else if (options.compositeKeywords === 'split') {
                     // if(options.compositeKeywords === 'split'){
                     token.value = parts[0] + ' ' + parts[1];
+                } else {
+                    //do nothing
                 }
                 let offsetDifference = token.value.length - tokenValue.length;
                 indexOffset += offsetDifference;

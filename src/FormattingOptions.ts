@@ -27,9 +27,9 @@ export interface FormattingOptions {
      * Forces all composite keywords (i.e. "elseif", "endwhile", etc...) to be consistent.
      * If 'split', they are split into their alternatives ("else if", "end while").
      * If 'combine', they are combined ("elseif", "endwhile").
-     * If null, they are not modified.
+     * If 'original' or falsey, they are not modified.
      */
-    compositeKeywords?: 'split' | 'combine' | null;
+    compositeKeywords?: 'split' | 'combine' | 'original' | null;
     /**
      * If true (the default), trailing white space is removed
      * If false, trailing white space is left intact

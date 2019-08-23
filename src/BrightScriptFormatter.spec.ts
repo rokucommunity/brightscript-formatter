@@ -339,6 +339,62 @@ describe('BrightScriptFormatter', () => {
         });
     });
 
+    describe('compositeKeywords', () => {
+        it(`works for 'combine'`, () => {
+            expect(formatter.format(
+                `function a()\nend function`,
+                {
+                    compositeKeywords: 'combine'
+                }
+            )).to.equal(
+                `function a()\nendfunction`,
+            );
+        });
+
+        it(`works for 'split'`, () => {
+            expect(formatter.format(
+                `function a()\nendfunction`,
+                {
+                    compositeKeywords: 'split'
+                }
+            )).to.equal(
+                `function a()\nend function`,
+            );
+        });
+
+        it(`works for 'original'`, () => {
+            expect(formatter.format(
+                `function a()\nend  function`,
+                {
+                    compositeKeywords: 'original'
+                }
+            )).to.equal(
+                `function a()\nend  function`,
+            );
+        });
+
+        it(`works when not specified`, () => {
+            expect(formatter.format(
+                `function a()\nendfunction`,
+                {
+                }
+            )).to.equal(
+                `function a()\nend function`,
+            );
+        });
+
+        it(`leaves alone when provided and set to undefined`, () => {
+            expect(formatter.format(
+                `function a()\nend   function`,
+                {
+                    compositeKeywords: undefined
+                }
+            )).to.equal(
+                `function a()\nend   function`,
+            );
+        });
+    });
+
     describe('keywordCase', () => {
         it('forces keywords to upper case', () => {
             expect(formatter.format(
