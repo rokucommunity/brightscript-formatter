@@ -32,9 +32,7 @@ export class BrightScriptFormatter {
             tokens = this.formatCompositeKeywords(tokens, options);
         }
 
-        if (options.keywordCase) {
-            tokens = this.formatKeywordCasing(tokens, options);
-        }
+        tokens = this.formatKeywordCase(tokens, options);
 
         if (options.removeTrailingWhiteSpace) {
             tokens = this.formatTrailingWhiteSpace(tokens, options);
@@ -128,13 +126,37 @@ export class BrightScriptFormatter {
         }
     }
 
-    private formatKeywordCasing(tokens: Token[], options: FormattingOptions) {
+    /**
+     * Determine if the token is a type keyword (meaing preceeded by `as` token)
+     * @param token
+     */
+    private isType(tokens: Token[], token: Token) {
+        let previousToken = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(token));
+        if (previousToken && previousToken.value.toLowerCase() === 'as') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private formatKeywordCase(tokens: Token[], options: FormattingOptions) {
         for (let token of tokens) {
+
             //if this token is a keyword
             if (KeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                let keywordCase = options.keywordCase;
-                if (options.keywordCaseOverride && options.keywordCaseOverride[token.tokenType] !== undefined) {
-                    keywordCase = options.keywordCaseOverride[token.tokenType];
+                //a token is a type if it's preceeded by an `as` token
+                let isType = this.isType(tokens, token);
+
+                let keywordCase: FormattingOptions['keywordCase'];
+
+                if (isType) {
+                    keywordCase = options.typeCase;
+                } else {
+                    keywordCase = options.keywordCase;
+                    //if this is an overridable keyword, use that override instead
+                    if (options.keywordCaseOverride && options.keywordCaseOverride[token.tokenType] !== undefined) {
+                        keywordCase = options.keywordCaseOverride[token.tokenType];
+                    }
                 }
                 switch (keywordCase) {
                     case 'lower':
@@ -180,6 +202,13 @@ export class BrightScriptFormatter {
                                     .substring(firstWordLength + spaceCharCount + 1)
                                     .toLowerCase();
                         }
+                    case 'original':
+                    case null:
+                    case undefined:
+                    default:
+                        //do nothing
+                        break;
+
                 }
             }
         }
@@ -707,6 +736,9 @@ export class BrightScriptFormatter {
             for (let attrname in options) {
                 fullOptions[attrname] = options[attrname];
             }
+        }
+        if (!fullOptions.typeCase) {
+            fullOptions.typeCase = fullOptions.keywordCase as any;
         }
         return fullOptions;
     }

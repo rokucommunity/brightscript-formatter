@@ -339,6 +339,66 @@ describe('BrightScriptFormatter', () => {
         });
     });
 
+    describe('typeCase', () => {
+        it('uses keywordCase when not specified', () => {
+            expect(formatter.format(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                {
+                    keywordCase: 'lower'
+                }
+            )).to.equal(
+                `sub a(name as string, cb as function)`,
+            );
+        });
+
+        it('overrides keywordCase when specified', () => {
+            expect(formatter.format(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                {
+                    keywordCase: 'lower',
+                    typeCase: 'title'
+                }
+            )).to.equal(
+                `sub a(name as String, cb as Function)`,
+            );
+        });
+
+        it('overrides keywordCase even when keyword case is omitted', () => {
+            expect(formatter.format(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                {
+                    typeCase: 'title'
+                }
+            )).to.equal(
+                `sub a(name as String, cb as Function)`,
+            );
+        });
+
+        it('works even when keywordCase is disabled', () => {
+            expect(formatter.format(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                {
+                    keywordCase: null,
+                    typeCase: 'title'
+                }
+            )).to.equal(
+                `SUB a(name AS String, cb AS Function)`,
+            );
+        });
+
+        it('does not work when both keywordCase and typeCase are disabled', () => {
+            expect(formatter.format(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                {
+                    keywordCase: undefined,
+                    typeCase: undefined
+                }
+            )).to.equal(
+                `SUB a(name AS STRING, cb AS FUNCTION)`,
+            );
+        });
+    });
+
     describe('compositeKeywords', () => {
         it(`works for 'combine'`, () => {
             expect(formatter.format(
@@ -401,18 +461,31 @@ describe('BrightScriptFormatter', () => {
                 `sub add()\nif true then\na=1\nelseif true then\na=1\nendif\nendsub`,
                 {
                     keywordCase: 'upper',
-                    compositeKeywords: null
+                    compositeKeywords: 'original'
                 }
             )).to.equal(
                 `SUB add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nENDSUB`,
             );
         });
+
+        // it('does not format function or sub case when used as types', () => {
+        //     expect(formatter.format(
+        //         `FUNCTION add(cb1 as FUNCTION, cb2 as SUB)\nENDSUB`,
+        //         {
+        //             keywordCase: 'lower',
+        //             compositeKeywords: 'original'
+        //         }
+        //     )).to.equal(
+        //         `function add(cb1 as FUNCTION, cb2 as SUB)\n`
+        //     );
+        // });
+
         it('forces keywords to lower case', () => {
             expect(formatter.format(
                 `SUB add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nENDSUB`,
                 {
                     keywordCase: 'lower',
-                    compositeKeywords: null
+                    compositeKeywords: 'original'
                 }
             )).to.equal(
                 `sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nendsub`,
@@ -424,7 +497,7 @@ describe('BrightScriptFormatter', () => {
                 `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    end if\nENDSUB`,
                 {
                     keywordCase: 'title',
-                    compositeKeywords: null
+                    compositeKeywords: 'original'
                 }
             )).to.equal(
                 `Sub add()\n    If true Then\n        a = 1\n    ElseIf true Then\n        a = 1\n    End If\nEndSub`,
@@ -435,8 +508,8 @@ describe('BrightScriptFormatter', () => {
             expect(formatter.format(
                 `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    endif\nENDSUB`,
                 {
-                    keywordCase: null,
-                    compositeKeywords: null
+                    keywordCase: 'original',
+                    compositeKeywords: 'original'
                 }
             )).to.equal(
                 `sub add()\n    IF true then\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    endif\nENDSUB`,
@@ -451,7 +524,7 @@ describe('BrightScriptFormatter', () => {
                 `Sub add()\n    If true Then\n        a=1\n    ElseIf true Then\n        a=1\n    EndIf\nEndSub`,
                 {
                     keywordCase: 'upper',
-                    compositeKeywords: null,
+                    compositeKeywords: 'original',
                     keywordCaseOverride: {
                         sub: 'lower',
                         endSub: 'lower'
@@ -466,7 +539,7 @@ describe('BrightScriptFormatter', () => {
                 `Sub add()\n    IF true THEN\n        a=1\n    ELSEIF true THEN\n        a=1\n    ENDIF\nEndSub`,
                 {
                     keywordCase: 'lower',
-                    compositeKeywords: null,
+                    compositeKeywords: 'original',
                     keywordCaseOverride: {
                         sub: 'upper',
                         endSub: 'upper'
@@ -482,7 +555,7 @@ describe('BrightScriptFormatter', () => {
                 `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    end if\nENDSUB`,
                 {
                     keywordCase: 'lower',
-                    compositeKeywords: null,
+                    compositeKeywords: 'original',
                     keywordCaseOverride: {
                         sub: 'title',
                         endSub: 'title'
@@ -498,10 +571,10 @@ describe('BrightScriptFormatter', () => {
                 `SuB add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    endif\nEnDSuB`,
                 {
                     keywordCase: 'lower',
-                    compositeKeywords: null,
+                    compositeKeywords: 'original',
                     keywordCaseOverride: {
-                        sub: null,
-                        endSub: null
+                        sub: 'original',
+                        endSub: 'original'
                     }
                 }
             )).to.equal(

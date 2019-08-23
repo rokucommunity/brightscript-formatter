@@ -19,10 +19,16 @@ export interface FormattingOptions {
      */
     formatIndent?: boolean;
     /**
-     * Replaces all keywords with the upper or lower case settings specified.
-     * If set to null, they are not modified at all.
+     * Replaces all keywords with the upper or lower case settings specified (excluding types...see `typeCase`).
+     * If set to `'original'`, they are not modified at all.
      */
-    keywordCase?: 'lower' | 'upper' | 'title' | null;
+    keywordCase?: 'lower' | 'upper' | 'title' | 'original' | null;
+    /**
+     * Replaces all type keywords (`function`, `integer`, `string`, etc...) with the upper or lower case settings specified.
+     * If set to `'original'`, they are not modified at all.
+     * If falsey (or omitted), it defaults to the value in `keywordCase`
+     */
+    typeCase?: 'lower' | 'upper' | 'title' | 'original';
     /**
      * Forces all composite keywords (i.e. "elseif", "endwhile", etc...) to be consistent.
      * If 'split', they are split into their alternatives ("else if", "end while").
