@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.1] - 2019-08-30
+### Fixed
+ - bug that would incorrectly de-indent every line after an if statement's first line that had a trailing comma (i.e. `if true then 'some comment`) 
+
+
+
 ## [1.7.0] - 2019-08-23
 ### Added
  - `typeCase` property which specifies the casing of type keywords (works just like keywordCase). When specified, it overrides keywordCase ONLY for types (any keyword preceeded by `as` token).
@@ -26,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.7.1]:  https://github.com/rokucommunity/brightscript-formatter/compare/v1.7.0...v1.7.1
 [1.7.0]:  https://github.com/rokucommunity/brightscript-formatter/compare/v1.6.0...v1.7.0
 [1.6.0]:  https://github.com/rokucommunity/brightscript-formatter/compare/v1.5.0...v1.6.0
 [1.5.0]:  https://github.com/rokucommunity/brightscript-formatter/compare/v1.4.0...v1.5.0
