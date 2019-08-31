@@ -758,6 +758,10 @@ export class BrightScriptFormatter {
         if (thenIndex === -1) {
             return false;
         }
+        //if there's a comment at the end, this is a multi-line if statement
+        if (this.tokenIndexOf(TokenType.remComment, lineTokens) > -1 || this.tokenIndexOf(TokenType.quoteComment, lineTokens) > -1) {
+            return false;
+        }
 
         //see if there is anything after the "then". If so, assume it's a one-line if statement
         for (let i = thenIndex + 1; i < lineTokens.length; i++) {

@@ -51,15 +51,15 @@
   },
   "homepage": "https://github.com/RokuCommunity/brightscript-formatter#readme",
   "dependencies": {
-    "@types/fs-extra": "^7.0.0",
     "brightscript-parser": "1.2.0",
     "child-process-promise": "^2.2.1",
-    "fs-extra": "^8.0.1",
+    "fs-extra": "^8.1.0",
     "glob-promise": "^3.4.0",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.2",
+    "@types/chai": "^4.2.0",
+    "@types/fs-extra": "^7.0.0",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",

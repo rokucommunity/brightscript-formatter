@@ -192,6 +192,10 @@ describe('BrightScriptFormatter', () => {
     });
 
     describe('indentStyle', () => {
+        it('does not fail with comments next to if statement', () => {
+            let program = `sub a()\n    if true then 'comment\n        return true\n    end if\nend sub`;
+            expect(formatter.format(program)).to.equal(program);
+        });
         it('does not change correctly formatted programs', () => {
             let program = `sub add(a, b)\n    return a + b\nend sub`;
             expect(formatter.format(program)).to.equal(program);
