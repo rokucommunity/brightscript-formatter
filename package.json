@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "preversion": "npm run build && npm run lint && npm run test",
     "build": "rimraf dist && tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm run test && npm run lint",
